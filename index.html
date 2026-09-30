@@ -1,0 +1,1332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>FIMA | High-Fidelity Prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* First I set the FIMA brand colours from the 9.1D colour system */
+:root {
+  --navy: #1E2A5E; --steel: #33658A; --sky: #86BBD8; --green: #5FCF6A; --honey: #F6AE2D; --orange: #F26419;
+  --cta: #E4570F;
+  --page: #E9EFF5; --bg: #F5F8FB; --surface: #FFFFFF; --text: #1E2A5E; --muted: #5B6689; --line: #E1E7EF;
+  --lav-t: #F1E6F9; --green-t: #E4F6E6; --sky-t: #E3F0F7; --orange-t: #FDE7DB; --honey-t: #FDF2D9; --steel-t: #E2EBF2;
+  --primary: #1E2A5E; --on-primary: #FFFFFF; --frame: #1B2244;
+  --head: 'Poppins', 'Segoe UI', system-ui, sans-serif;
+  --body: 'DM Sans', 'Segoe UI', system-ui, -apple-system, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --page: #0B1026; --bg: #111834; --surface: #1A2347; --text: #EEF2FA; --muted: #A9B3CF; --line: #2B3664;
+    --lav-t: #33294A; --green-t: #1C3A2D; --sky-t: #1B3149; --orange-t: #3E2420; --honey-t: #3A3020; --steel-t: #1F2E4A;
+    --primary: #86BBD8; --on-primary: #1E2A5E; --frame: #05081A;
+  }
+}
+:root[data-theme="dark"] {
+  --page: #0B1026; --bg: #111834; --surface: #1A2347; --text: #EEF2FA; --muted: #A9B3CF; --line: #2B3664;
+  --lav-t: #33294A; --green-t: #1C3A2D; --sky-t: #1B3149; --orange-t: #3E2420; --honey-t: #3A3020; --steel-t: #1F2E4A;
+  --primary: #86BBD8; --on-primary: #1E2A5E; --frame: #05081A;
+}
+:root { box-sizing: border-box; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+html { scroll-padding-top: env(safe-area-inset-top, 0px); height: 100%; }
+*, *::before, *::after { box-sizing: inherit; }
+body { margin: 0; height: 100%; background: var(--page); color: var(--text); font-family: var(--body); font-size: 15px; line-height: 1.45; -webkit-font-smoothing: antialiased; }
+h1, h2, h3, h4 { font-family: var(--head); margin: 0; line-height: 1.2; }
+button { font: inherit; color: inherit; cursor: pointer; border: 0; background: none; }
+input, select { font: inherit; color: inherit; }
+:focus-visible { outline: 3px solid var(--sky); outline-offset: 2px; border-radius: 8px; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+
+/* Then I lay out the page: a guide panel beside a phone frame */
+.layout { min-height: 100%; display: flex; justify-content: center; align-items: center; gap: 56px; padding: 32px 24px; }
+.guide { width: 360px; max-height: calc(100vh - 64px); overflow-y: auto; }
+.guide .brand { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+.guide .brand span { font-family: var(--head); font-weight: 700; font-size: 26px; letter-spacing: .5px; }
+.guide p { color: var(--muted); margin: 6px 0 18px; }
+.guide h3 { font-size: 15px; margin: 22px 0 10px; }
+.flist { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.flist button { width: 100%; text-align: left; display: flex; gap: 10px; align-items: center; padding: 9px 12px; border-radius: 12px; background: var(--surface); border: 1px solid var(--line); font-size: 14px; }
+.flist button:hover { border-color: var(--sky); }
+.flist .n { flex: none; width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; font-size: 12px; font-weight: 700; background: var(--sky-t); color: var(--text); }
+.flist .new { margin-left: auto; white-space: nowrap; flex: none; font-size: 11px; font-weight: 700; background: var(--honey); color: #1E2A5E; padding: 2px 8px; border-radius: 20px; }
+.tasks { margin: 0; padding-left: 20px; color: var(--muted); font-size: 14px; display: grid; gap: 6px; }
+.guide .foot { margin-top: 18px; display: flex; gap: 8px; flex-wrap: wrap; }
+.note { font-size: 12.5px; color: var(--muted); margin-top: 14px; }
+
+.phone { position: relative; width: 390px; height: 844px; max-height: calc(100vh - 40px); border-radius: 54px; background: var(--frame); padding: 12px; box-shadow: 0 30px 60px -20px rgba(20, 30, 70, .45); flex: none; }
+.app { position: relative; width: 100%; height: 100%; border-radius: 44px; overflow: hidden; background: var(--bg); display: flex; flex-direction: column; }
+.status { flex: none; height: 46px; display: flex; align-items: center; justify-content: space-between; padding: 6px 28px 0; font-weight: 700; font-size: 14px; position: relative; z-index: 5; }
+.status .island { position: absolute; left: 50%; top: 10px; transform: translateX(-50%); width: 110px; height: 30px; border-radius: 20px; background: #05081A; }
+.status .sig { display: flex; gap: 5px; align-items: center; }
+.screen { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 6px 18px 110px; scrollbar-width: none; }
+.screen::-webkit-scrollbar { display: none; }
+.screen.nonav { padding-bottom: 28px; }
+
+@media (max-width: 900px) {
+  .guide { display: none; }
+  .layout { padding: 0; height: 100%; }
+  .phone { width: 100%; height: 100%; max-height: none; border-radius: 0; padding: 0; box-shadow: none; }
+  .app { border-radius: 0; }
+  .status { display: none; }
+  .screen { padding-top: 14px; }
+}
+
+/* Next I style the shared parts: header, cards, buttons, chips */
+.top { display: flex; align-items: center; justify-content: space-between; margin: 4px 0 14px; }
+.logo { display: flex; align-items: center; gap: 6px; font-family: var(--head); font-weight: 700; font-size: 20px; }
+.iconbtn { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; background: var(--surface); border: 1px solid var(--line); position: relative; }
+.iconbtn .dot { position: absolute; top: 7px; right: 8px; width: 9px; height: 9px; border-radius: 50%; background: var(--orange); border: 2px solid var(--surface); }
+.avatar { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; font-weight: 700; color: #1E2A5E; background: var(--sky); font-size: 15px; }
+.hello { font-family: var(--head); font-size: 21px; font-weight: 600; margin-bottom: 14px; }
+.title { font-family: var(--head); font-size: 24px; font-weight: 700; }
+.sub { color: var(--muted); font-size: 13.5px; }
+.back { display: flex; align-items: center; gap: 6px; font-weight: 600; margin: 4px 0 12px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 20px; padding: 16px; margin-bottom: 14px; }
+.row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
+.tile { border-radius: 18px; padding: 14px; }
+.tile small { display: block; font-size: 12.5px; color: var(--muted); }
+.tile b { font-family: var(--head); font-size: 22px; }
+.t-lav { background: var(--lav-t); } .t-sky { background: var(--sky-t); } .t-orange { background: var(--orange-t); } .t-green { background: var(--green-t); } .t-honey { background: var(--honey-t); } .t-steel { background: var(--steel-t); }
+.sec { display: flex; align-items: center; justify-content: space-between; margin: 20px 0 10px; }
+.sec h3 { font-size: 16px; }
+.link { color: var(--steel); font-weight: 600; font-size: 13.5px; }
+:root[data-theme="dark"] .link { color: var(--sky); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .link { color: var(--sky); } }
+
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 48px; padding: 0 20px; border-radius: 26px; font-weight: 700; font-size: 15px; }
+.btn.block { width: 100%; }
+.btn.primary { background: var(--primary); color: var(--on-primary); }
+.btn.cta { background: var(--cta); color: #fff; }
+.btn.honey { background: var(--honey); color: #1E2A5E; }
+.btn.ghost { background: var(--surface); border: 1.5px solid var(--line); }
+.btn.danger { background: #C2362B; color: #fff; }
+.btn.sm { height: 36px; padding: 0 14px; font-size: 13.5px; }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+.chips { display: flex; gap: 8px; flex-wrap: wrap; }
+.chips.scroll { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; margin: 0 -18px; padding: 0 18px 2px; }
+.chip { flex: none; height: 34px; padding: 0 14px; border-radius: 18px; border: 1.5px solid var(--line); background: var(--surface); font-size: 13.5px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; }
+.chip.on { background: var(--primary); color: var(--on-primary); border-color: var(--primary); }
+.tag { display: inline-block; font-size: 11.5px; font-weight: 700; padding: 2px 9px; border-radius: 12px; }
+.tag.pred { background: var(--honey-t); color: var(--text); border: 1px dashed var(--honey); }
+.tag.soft { background: var(--sky-t); color: var(--text); }
+.tag.paid { background: var(--green-t); color: var(--text); }
+.tag.owes { background: var(--orange-t); color: var(--text); }
+.seg { display: grid; grid-auto-flow: column; background: var(--steel-t); border-radius: 22px; padding: 4px; margin-bottom: 16px; }
+.seg button { height: 38px; border-radius: 18px; font-weight: 600; font-size: 14px; }
+.seg button.on { background: var(--surface); box-shadow: 0 1px 4px rgba(20, 30, 70, .15); }
+
+.bar { height: 10px; border-radius: 6px; background: var(--steel-t); overflow: hidden; }
+.bar i { display: block; height: 100%; border-radius: 6px; background: var(--green); transition: width .4s ease; }
+.bar i.warn { background: #E0473A; } .bar i.over { background: #B3261E; }
+.red { color: #C2362B; font-weight: 700; }
+.amt.in { color: #23813A; }
+.cal { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; text-align: center; margin-top: 8px; }
+.cal small { font-size: 11.5px; color: var(--muted); font-weight: 600; padding-bottom: 4px; }
+.cal button { height: 36px; border-radius: 50%; font-size: 13.5px; font-weight: 600; width: 36px; margin: 0 auto; display: grid; place-items: center; }
+.cal button.past { color: var(--muted); opacity: .55; }
+.cal button.today { box-shadow: inset 0 0 0 2px var(--green); }
+.cal button.bill { background: var(--orange); color: #fff; }
+.cal button.bill.pred { background: var(--honey); color: #1E2A5E; }
+.cal button.sel { outline: 3px solid var(--navy); outline-offset: 1px; }
+.ontrack { display: flex; align-items: center; gap: 8px; margin-top: 10px; font-size: 13.5px; font-weight: 600; }
+
+.list .item { display: flex; align-items: center; gap: 12px; padding: 11px 0; border-bottom: 1px solid var(--line); }
+.list .item:last-child { border-bottom: 0; }
+.ic { flex: none; width: 38px; height: 38px; border-radius: 12px; display: grid; place-items: center; color: #1E2A5E; }
+.item .grow { flex: 1; min-width: 0; }
+.item .grow b { display: block; font-weight: 600; font-size: 14.5px; }
+.item .grow small { color: var(--muted); font-size: 12.5px; }
+.amt { font-weight: 700; font-variant-numeric: tabular-nums; }
+
+/* Safe-to-spend hero card, the most important element in the app */
+.safe { position: relative; background: var(--green); color: #1E2A5E; border-radius: 26px; padding: 18px 18px 16px; margin-bottom: 14px; overflow: hidden; }
+.safe.low { background: var(--honey); }
+.safe.none { background: #F4A07A; }
+.safe .lbl { font-weight: 700; font-size: 13px; letter-spacing: .3px; display: flex; align-items: center; gap: 6px; }
+.safe .big { font-family: var(--head); font-weight: 700; font-size: 46px; line-height: 1.1; margin: 4px 0 2px; }
+.safe .after { font-size: 13.5px; font-weight: 500; }
+.safe .mascot { position: absolute; right: 14px; top: 14px; background: rgba(255, 255, 255, .55); border-radius: 50%; padding: 4px; }
+.safe .why { margin-top: 12px; display: inline-flex; align-items: center; gap: 4px; font-weight: 700; font-size: 13px; background: rgba(255, 255, 255, .45); padding: 6px 12px; border-radius: 16px; color: #1E2A5E; }
+
+.afford { display: flex; gap: 8px; margin-top: 10px; }
+.afford input { flex: 1; min-width: 0; height: 46px; border-radius: 14px; border: 1.5px solid var(--line); background: var(--bg); padding: 0 14px; font-weight: 600; }
+.verdict { margin-top: 12px; border-radius: 16px; padding: 12px 14px; display: flex; gap: 12px; align-items: flex-start; }
+.verdict b { display: block; font-family: var(--head); font-size: 15px; }
+.verdict p { margin: 2px 0 8px; font-size: 13.5px; }
+
+.chart { display: flex; align-items: flex-end; gap: 8px; height: 110px; margin-top: 14px; }
+.chart .col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; height: 100%; justify-content: flex-end; }
+.chart .col span { width: 100%; border-radius: 8px 8px 4px 4px; background: #BFE9C4; min-height: 4px; transition: height .4s ease; }
+.chart .col span.today { background: var(--green); }
+.chart .col span.future { background: var(--steel-t); }
+.chart .col small { font-size: 11.5px; color: var(--muted); }
+
+.tip { display: flex; gap: 10px; align-items: center; width: 100%; text-align: left; border-radius: 16px; padding: 12px 14px; background: var(--sky-t); font-size: 14px; font-weight: 500; margin-bottom: 14px; }
+
+/* Bottom navigation and the quick-add button */
+.nav { position: absolute; left: 0; right: 0; bottom: 0; height: 84px; padding: 8px 10px calc(14px + env(safe-area-inset-bottom, 0px)); background: var(--surface); border-top: 1px solid var(--line); display: grid; grid-template-columns: repeat(5, 1fr); z-index: 10; }
+.nav button { display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 11.5px; font-weight: 600; color: var(--muted); }
+.nav button .pill { width: 54px; height: 30px; border-radius: 16px; display: grid; place-items: center; }
+.nav button.on { color: var(--text); }
+.nav button.on .pill { background: var(--green-t); }
+.fab { position: absolute; right: 18px; bottom: 100px; width: 58px; height: 58px; border-radius: 50%; background: var(--cta); color: #fff; display: grid; place-items: center; box-shadow: 0 10px 22px -8px rgba(228, 87, 15, .7); z-index: 11; }
+
+/* Bottom sheets, dialogs and toasts */
+.scrim { position: absolute; inset: 0; background: rgba(12, 18, 45, .45); z-index: 20; display: flex; align-items: flex-end; animation: fade .2s ease; }
+.sheet { width: 100%; max-height: 88%; overflow-y: auto; background: var(--surface); border-radius: 28px 28px 0 0; padding: 10px 20px calc(24px + env(safe-area-inset-bottom, 0px)); animation: up .25s ease; }
+.sheet .grab { width: 44px; height: 5px; border-radius: 3px; background: var(--line); margin: 0 auto 14px; }
+.sheet h2 { font-size: 20px; margin-bottom: 4px; }
+.scrim.mid { align-items: center; justify-content: center; padding: 24px; }
+.dialog { background: var(--surface); border-radius: 24px; padding: 22px; width: 100%; animation: pop .2s ease; }
+.dialog h2 { font-size: 19px; margin-bottom: 6px; }
+.dialog p { color: var(--muted); margin: 0 0 16px; font-size: 14px; }
+.toast { position: absolute; left: 18px; right: 18px; bottom: 104px; z-index: 15; background: var(--navy); color: #fff; border-radius: 16px; padding: 12px 16px; font-size: 14px; font-weight: 500; display: flex; align-items: center; gap: 10px; animation: up .25s ease; }
+:root[data-theme="dark"] .toast { background: #2E3B75; }
+.toast button { margin-left: auto; color: var(--sky); font-weight: 700; }
+@keyframes up { from { transform: translateY(30px); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes pop { from { transform: scale(.94); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+
+.field { margin-bottom: 14px; }
+.field label { display: block; font-weight: 600; font-size: 13.5px; margin-bottom: 6px; }
+.field input, .field select { width: 100%; height: 48px; border-radius: 14px; border: 1.5px solid var(--line); background: var(--bg); padding: 0 14px; }
+.field input:focus, .field select:focus, .afford input:focus { border-color: var(--steel); outline: none; }
+.money { display: flex; align-items: center; justify-content: center; gap: 4px; font-family: var(--head); font-weight: 700; margin: 8px 0 16px; }
+.money span { font-size: 36px; color: var(--muted); }
+.money input { width: 190px; border: 0; border-bottom: 2px solid var(--line); background: none; font-size: 44px; font-weight: 700; font-family: var(--head); text-align: center; padding: 0; }
+.money input:focus { outline: none; border-color: var(--green); }
+.err { color: #C2362B; font-size: 13px; font-weight: 600; margin: -8px 0 10px; }
+:root[data-theme="dark"] .err, :root[data-theme="dark"] .red { color: #FF8A7A; }
+:root[data-theme="dark"] .amt.in { color: #7FE08A; }
+:root[data-theme="dark"] .cal button.sel { outline-color: var(--sky); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .red, :root:not([data-theme="light"]) .err { color: #FF8A7A; } :root:not([data-theme="light"]) .amt.in { color: #7FE08A; } }
+.switch { position: relative; width: 50px; height: 30px; flex: none; }
+.switch input { opacity: 0; width: 100%; height: 100%; margin: 0; position: absolute; cursor: pointer; z-index: 1; }
+.switch i { position: absolute; inset: 0; border-radius: 16px; background: var(--line); transition: background .2s; }
+.switch i::after { content: ""; position: absolute; left: 3px; top: 3px; width: 24px; height: 24px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0, 0, 0, .25); transition: transform .2s; }
+.switch input:checked + i { background: var(--green); }
+.switch input:checked + i::after { transform: translateX(20px); }
+.switch input:focus-visible + i { outline: 3px solid var(--sky); outline-offset: 2px; }
+
+.opt { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; padding: 14px; border-radius: 16px; border: 1.5px solid var(--line); background: var(--surface); margin-bottom: 10px; font-weight: 600; }
+.opt .radio { width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--muted); flex: none; }
+.opt.on { border-color: var(--green); background: var(--green-t); }
+.opt.on .radio { border: 6px solid var(--navy); }
+:root[data-theme="dark"] .opt.on .radio { border-color: var(--green); }
+.steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin: 6px 0 18px; }
+.steps i { height: 6px; border-radius: 4px; background: var(--line); }
+.steps i.on { background: var(--green); }
+
+.splash { position: absolute; inset: 0; background: var(--sky); color: #1E2A5E; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 30px; z-index: 6; }
+.splash .word { font-family: var(--head); font-weight: 700; font-size: 58px; letter-spacing: 10px; margin-bottom: -6px; color: #fff; text-shadow: 0 2px 0 rgba(30, 42, 94, .2); }
+.splash .mascot { animation: bob 3s ease-in-out infinite; }
+.splash h1 { color: #1E2A5E; font-size: 26px; margin: 18px 0 30px; }
+.splash .btn { width: 240px; margin-bottom: 12px; }
+.splash .lav { background: #E7C8F5; color: #1E2A5E; }
+
+.ring { position: relative; flex: none; }
+.ring b { position: absolute; inset: 0; display: grid; place-items: center; font-family: var(--head); font-size: 15px; }
+.goal { display: flex; gap: 14px; align-items: center; }
+.members { display: flex; gap: 8px; align-items: center; margin-bottom: 14px; }
+.members .avatar { width: 46px; height: 46px; font-size: 14px; }
+.members .add { border: 2px dashed var(--line); background: none; color: var(--muted); }
+.person { display: flex; align-items: center; gap: 10px; padding: 8px 0; }
+.person .avatar { width: 32px; height: 32px; font-size: 12px; flex: none; }
+.person .avatar.me { font-size: 10px; }
+.person .grow { flex: 1; font-weight: 600; }
+.person .tag, .person .btn, .person .link { white-space: nowrap; }
+.person .btn.sm { padding: 0 12px; }
+.compare { display: flex; align-items: flex-end; gap: 14px; height: 100px; margin: 10px 0 6px; }
+.compare div { width: 46px; border-radius: 8px 8px 4px 4px; }
+.menu button { width: 100%; display: flex; align-items: center; gap: 12px; padding: 14px 4px; border-bottom: 1px solid var(--line); font-weight: 600; text-align: left; }
+.menu button:last-child { border-bottom: 0; }
+.menu button .grow { flex: 1; }
+.empty { text-align: center; color: var(--muted); padding: 18px 8px; font-size: 14px; }
+.spinner { width: 42px; height: 42px; border-radius: 50%; border: 4px solid var(--line); border-top-color: var(--green); animation: spin 0.8s linear infinite; margin: 20px auto; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.muted { color: var(--muted); }
+input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+input[type=number] { -moz-appearance: textfield; }
+input[type=checkbox] { accent-color: #3FAF4D; }
+.mt { margin-top: 12px; }
+.center { text-align: center; }
+</style>
+</head>
+<body>
+<div class="layout">
+  <aside class="guide" id="guide"></aside>
+  <div class="phone">
+    <div class="app" id="app">
+      <div class="status" aria-hidden="true"><span>9:41</span><span class="island"></span><span class="sig">
+        <svg width="18" height="12" viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1" fill="currentColor"/><rect x="5" y="5" width="3" height="7" rx="1" fill="currentColor"/><rect x="10" y="2" width="3" height="10" rx="1" fill="currentColor"/><rect x="15" y="0" width="3" height="12" rx="1" fill="currentColor"/></svg>
+        <svg width="26" height="12" viewBox="0 0 26 12"><rect x=".5" y=".5" width="22" height="11" rx="3" fill="none" stroke="currentColor"/><rect x="2" y="2" width="17" height="8" rx="2" fill="currentColor"/><rect x="23.5" y="4" width="2" height="4" rx="1" fill="currentColor"/></svg>
+      </span></div>
+      <main class="screen" id="screen" tabindex="-1"></main>
+      <nav class="nav" id="nav" aria-label="Main"></nav>
+      <div id="layer"></div>
+    </div>
+  </div>
+</div>
+<script>
+// First I set up the sample data used by the prototype (no real bank data)
+const KEY = 'fima-prototype-v2';
+
+function seedData() {
+  const t = (d, amount, cat, name) => ({ id: Math.random().toString(36).slice(2), daysAgo: d, amount, cat, name });
+  return {
+    onboarded: false,
+    account: { email: 'priya@deakin.edu.au' },
+    theme: 'system',
+    user: { name: 'Priya', uni: 'Deakin University', income: 'casual', bank: true },
+    balance: 684,
+    weeklyIncome: 400,
+    incomeNote: 'Estimated from your last 8 weeks of pay',
+    limitOverride: {},
+    usual: { Takeaway: 110 },
+    incomeLog: [
+      { id: 'i1', daysAgo: 3, amount: 412, source: 'Work', name: 'Casual job pay' },
+      { id: 'i2', daysAgo: 10, amount: 368, source: 'Work', name: 'Casual job pay' },
+      { id: 'i3', daysAgo: 17, amount: 405, source: 'Work', name: 'Casual job pay' },
+      { id: 'i4', daysAgo: 20, amount: 150, source: 'Family', name: 'Family support' },
+      { id: 'i5', daysAgo: 24, amount: 390, source: 'Work', name: 'Casual job pay' }
+    ],
+    txns: [
+      t(0, 5.5, 'Takeaway', 'Campus cafe'), t(0, 6, 'Takeaway', 'Bubble tea'), t(1, 20, 'Transport', 'Myki top-up'), t(1, 28.9, 'Takeaway', 'Food delivery'),
+      t(2, 46.2, 'Groceries', 'Woolworths'), t(3, 35, 'Uni', 'Textbook (second hand)'), t(4, 22.4, 'Takeaway', 'Burger place'),
+      t(5, 38, 'Groceries', 'Aldi'), t(6, 31.6, 'Takeaway', 'Food delivery'), t(8, 20, 'Transport', 'Myki top-up'),
+      t(9, 52, 'Groceries', 'Coles'), t(10, 18.5, 'Takeaway', 'Sushi train'), t(12, 12, 'Uni', 'Printing credit'),
+      t(13, 41, 'Groceries', 'Aldi'), t(15, 16, 'Fun', 'Cinema'), t(18, 26, 'Takeaway', 'Pizza night'),
+      t(20, 49, 'Groceries', 'Woolworths'), t(22, 20, 'Transport', 'Myki top-up'), t(25, 24, 'Takeaway', 'Food delivery'),
+      t(27, 44, 'Groceries', 'Coles')
+    ],
+    bills: [
+      { id: 'b1', name: 'Rent', amount: 420, dueIn: 7, every: 14, predicted: false, remind: true, cat: 'Rent' },
+      { id: 'b2', name: 'Phone plan', amount: 35, dueIn: 12, every: 30, predicted: false, remind: true, cat: 'Other' },
+      { id: 'b3', name: 'Electricity (your share)', amount: 60, dueIn: 13, every: 90, predicted: true, remind: true, cat: 'Other' },
+      { id: 'b4', name: 'Streaming', amount: 16, dueIn: 18, every: 30, predicted: false, remind: false, cat: 'Fun' }
+    ],
+    goals: [
+      { id: 'g1', name: 'Laptop fund', target: 1000, saved: 680, weekly: 15, emergency: false }
+    ],
+    house: { name: '12 Burwood Hwy house', members: ['Jo', 'Mia', 'Sam'] },
+    shared: [
+      { id: 's1', name: 'Electricity', total: 120, paidBy: 'You', split: 'Equal', shares: { You: 30, Jo: 30, Mia: 30, Sam: 30 }, paid: { You: true, Jo: true, Mia: true, Sam: false } },
+      { id: 's2', name: 'Internet', total: 80, paidBy: 'Mia', split: 'Equal', shares: { You: 20, Jo: 20, Mia: 20, Sam: 20 }, paid: { You: false, Jo: true, Mia: true, Sam: false } }
+    ],
+    subs: [
+      { id: 'u1', name: 'Music app', amount: 14, note: 'Not used for 60 days', status: 'open' },
+      { id: 'u2', name: 'Streaming (2nd)', amount: 16, note: 'Possible duplicate', status: 'open' }
+    ],
+    insight: { dismissed: false, feedback: null },
+    privacy: {
+      accounts: [{ name: 'Everyday account', detail: 'Read-only. Synced 2 min ago', on: true }, { name: 'Savings account', detail: 'Not shared with FIMA', on: false }],
+      data: { Transactions: true, Balances: true, 'AI spending analysis': true, 'Push notifications': true }
+    },
+    alerts: { bills: true, low: true, unusual: true },
+    reminded: {}
+  };
+}
+
+function load() {
+  try { const s = localStorage.getItem(KEY); return s ? JSON.parse(s) : null; } catch (e) { return null; }
+}
+function save() {
+  try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { /* storage can be unavailable */ }
+}
+
+let S = load() || seedData();
+let ui = { screen: S.onboarded ? 'home' : 'splash', planTab: 'budget', period: 'Week', filter: 'All', check: '', billView: 'list', calSel: null, sheet: null, dialog: null, onb: {} };
+
+// Then I add small helpers for money, icons and the mascot
+const money = (n, d = 2) => (n < 0 ? '-$' : '$') + Math.abs(n).toLocaleString('en-AU', { minimumFractionDigits: d, maximumFractionDigits: d });
+const round5 = n => Math.round(n / 5) * 5;
+const sum = arr => arr.reduce((a, b) => a + b, 0);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+const ICONS = {
+  home: 'M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z',
+  receipt: 'M6 3h12v18l-3-2-3 2-3-2-3 2z M9 8h6 M9 12h6',
+  plan: 'M4 5h16v15H4z M4 9h16 M8 3v4 M16 3v4 M8 13h3 M8 16h6',
+  split: 'M9 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6z M3 20c0-3 3-5 6-5s6 2 6 5 M16 5a3 3 0 0 1 0 6 M18 15c2 .6 3 2.2 3 5',
+  spark: 'M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z M19 15l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7z',
+  bell: 'M6 16v-5a6 6 0 0 1 12 0v5l2 2H4z M10 21h4',
+  plus: 'M12 5v14 M5 12h14',
+  chev: 'M9 6l6 6-6 6',
+  back: 'M15 18l-6-6 6-6',
+  shield: 'M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z M9 12l2 2 4-4',
+  bank: 'M3 10l9-6 9 6 M5 10v8 M9.5 10v8 M14.5 10v8 M19 10v8 M3 21h18',
+  info: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z M12 11v5 M12 8h.01',
+  x: 'M6 6l12 12 M18 6L6 18',
+  check: 'M5 12l5 5 9-10',
+  user: 'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8z M4 21c0-4 4-6 8-6s8 2 8 6',
+  download: 'M12 4v11 M7 10l5 5 5-5 M5 20h14',
+  trash: 'M4 7h16 M9 7V4h6v3 M6 7l1 13h10l1-13',
+  moon: 'M20 14A8 8 0 1 1 10 4a6 6 0 0 0 10 10z',
+  help: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6v.6 M12 17h.01',
+  out: 'M15 4h4v16h-4 M10 8l-4 4 4 4 M6 12h10',
+  target: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z M12 17a5 5 0 1 0 0-10 5 5 0 0 0 0 10z M12 13a1 1 0 1 0 0-2 1 1 0 0 0 0 2z',
+  umbrella: 'M3 12a9 9 0 0 1 18 0z M12 12v7a2 2 0 0 0 4 0',
+  edit: 'M4 20h4l11-11-4-4L4 16z M13 7l4 4',
+  send: 'M4 12l16-8-6 16-3-7z',
+  lock: 'M6 11h12v10H6z M8 11V7a4 4 0 0 1 8 0v4',
+  Rent: 'M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z',
+  wallet: 'M4 7h14a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H4z M4 7l11-3v3 M16 13h.01',
+  cal: 'M4 5h16v15H4z M4 9h16 M8 3v4 M16 3v4',
+  list: 'M8 6h12 M8 12h12 M8 18h12 M4 6h.01 M4 12h.01 M4 18h.01',
+  Groceries: 'M3 4h2l2.5 11h10.5l2-8H6.2 M9 20h.01 M17 20h.01',
+  Takeaway: 'M5 8h12v5a6 6 0 0 1-12 0z M17 9h2a2 2 0 0 1 0 4h-2 M8 3v2 M12 3v2',
+  Transport: 'M6 4h12a1 1 0 0 1 1 1v11H5V5a1 1 0 0 1 1-1z M5 11h14 M7 19v-3 M17 19v-3 M8.5 14h.01 M15.5 14h.01',
+  Uni: 'M2 9l10-5 10 5-10 5z M6 11v5c3 2 9 2 12 0v-5',
+  Fun: 'M12 3l2.6 5.5 6 .8-4.4 4.2 1.1 6L12 16.6 6.7 19.5l1.1-6L3.4 9.3l6-.8z',
+  Other: 'M3 12V3h9l9 9-9 9z M7.5 7.5h.01'
+};
+function icon(name, size = 22, sw = 2) {
+  return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${ICONS[name] || ICONS.Other}"/></svg>`;
+}
+
+const CATS = ['Groceries', 'Takeaway', 'Transport', 'Uni', 'Fun', 'Other'];
+const EXP_CATS = ['Groceries', 'Rent', 'Takeaway', 'Transport', 'Uni', 'Fun', 'Other'];
+const CAT_COL = { Rent: '#B98AD9', Groceries: '#5FCF6A', Takeaway: '#F26419', Transport: '#86BBD8', Uni: '#33658A', Fun: '#F6AE2D', Other: '#A7B1CC' };
+const CAT_TINT = { Rent: 't-lav', Groceries: 't-green', Takeaway: 't-orange', Transport: 't-sky', Uni: 't-steel', Fun: 't-honey', Other: 't-steel' };
+const SHARE = { Groceries: .30, Takeaway: .15, Transport: .12, Uni: .13, Fun: .10, Other: .20 };
+const PEOPLE_COL = { You: '#5FCF6A', Jo: '#86BBD8', Mia: '#F6AE2D', Sam: '#F26419' };
+
+// The FIMA mascot from the team's 7.1P sketches, with a mood
+function mascot(mood = 'happy', size = 64) {
+  const mouth = mood === 'worried' ? 'M40 64 Q50 56 60 64' : mood === 'wow' ? 'M46 60 a4 4 0 1 0 8 0 a4 4 0 1 0 -8 0' : 'M40 58 Q50 67 60 58';
+  const fill = mood === 'worried' ? '#8DDB95' : '#5FCF6A';
+  return `<svg class="mascot" width="${size}" height="${size}" viewBox="0 0 100 100" aria-hidden="true">
+    <path d="M52 8 C76 8 94 26 92 50 C91 74 72 92 48 90 C24 89 7 71 8 48 C9 24 28 8 52 8Z" fill="${fill}" stroke="#1E2A5E" stroke-opacity=".12" stroke-width="2"/>
+    <ellipse cx="38" cy="46" rx="4.5" ry="5.5" fill="#1E2A5E"/><ellipse cx="62" cy="46" rx="4.5" ry="5.5" fill="#1E2A5E"/>
+    <path d="${mouth}" fill="${mood === 'wow' ? '#1E2A5E' : 'none'}" stroke="#1E2A5E" stroke-width="4" stroke-linecap="round"/>
+  </svg>`;
+}
+function ring(pct, size = 64, col = '#5FCF6A', label = '') {
+  const r = size / 2 - 6, c = 2 * Math.PI * r, off = c * (1 - Math.min(pct, 1));
+  return `<div class="ring" style="width:${size}px;height:${size}px"><svg width="${size}" height="${size}" aria-hidden="true">
+    <circle cx="${size / 2}" cy="${size / 2}" r="${r}" fill="none" stroke="var(--steel-t)" stroke-width="8"/>
+    <circle cx="${size / 2}" cy="${size / 2}" r="${r}" fill="none" stroke="${col}" stroke-width="8" stroke-linecap="round" stroke-dasharray="${c}" stroke-dashoffset="${off}" transform="rotate(-90 ${size / 2} ${size / 2})" style="transition:stroke-dashoffset .5s"/>
+  </svg><b>${label}</b></div>`;
+}
+
+// Next I calculate safe-to-spend, budgets and spending from the data
+function calc() {
+  const due = S.bills.filter(b => b.dueIn <= 14).sort((a, b) => a.dueIn - b.dueIn);
+  const dueSum = sum(due.map(b => b.amount));
+  const goalSum = sum(S.goals.map(g => (g.saved < g.target ? g.weekly : 0)));
+  const safe = Math.max(0, S.balance - dueSum - goalSum);
+  const weekLimit = round5(S.weeklyIncome * 0.75);
+  const short = Math.max(0, dueSum + goalSum - S.balance);
+  return { due, dueSum, goalSum, safe, short, weekLimit, safeState: safe >= 60 ? 'ok' : safe > 0 ? 'low' : 'none' };
+}
+function spent(days, cat) {
+  // Rent is a bill, so it is left out of everyday spending unless asked for
+  return sum(S.txns.filter(t => t.daysAgo <= days && (cat ? t.cat === cat : t.cat !== 'Rent')).map(t => t.amount));
+}
+function dayTotal(ago) {
+  return sum(S.txns.filter(t => t.daysAgo === ago && t.cat !== 'Rent').map(t => t.amount));
+}
+function catLimit(cat) {
+  if (S.limitOverride[cat]) return S.limitOverride[cat];
+  return round5(calc().weekLimit * SHARE[cat]);
+}
+function periodInfo() {
+  const c = calc();
+  if (ui.period === 'Week') return { spent: spent(2), limit: c.weekLimit, label: 'Mon to Sun' };
+  if (ui.period === 'Month') return { spent: spent(29), limit: round5(c.weekLimit * 4.33), label: 'Last 30 days' };
+  return { spent: spent(13), limit: c.weekLimit * 2, label: 'Custom: this pay cycle (14 days)' };
+}
+function takeawayInsight() {
+  const now = spent(29, 'Takeaway');
+  const usual = S.usual.Takeaway;
+  return { now, usual, pct: Math.round((now - usual) / usual * 100) };
+}
+function owedToYou() {
+  let n = 0;
+  S.shared.forEach(b => { if (b.paidBy === 'You') Object.keys(b.shares).forEach(p => { if (p !== 'You' && !b.paid[p]) n += b.shares[p]; }); });
+  return n;
+}
+function youOwe() {
+  return sum(S.shared.filter(b => b.paidBy !== 'You' && !b.paid.You).map(b => b.shares.You || 0));
+}
+function notifications() {
+  const c = calc(), list = [];
+  if (S.alerts.bills) c.due.slice(0, 2).forEach(b => list.push({ icon: 'bell', tint: 't-orange', title: `${b.name} is due in ${b.dueIn} days`, body: `${money(b.amount)} is already set aside in your safe-to-spend.`, go: 'plan' }));
+  if (S.alerts.low && c.safeState !== 'ok') list.push({ icon: 'info', tint: 't-honey', title: 'Safe to spend is getting low', body: `You have ${money(c.safe)} left after bills and goals.`, go: 'home' });
+  if (owedToYou() > 0) list.push({ icon: 'split', tint: 't-sky', title: `Housemates owe you ${money(owedToYou())}`, body: 'Send a friendly reminder from Split.', go: 'split' });
+  const ti = takeawayInsight();
+  if (S.alerts.unusual && ti.pct > 20 && S.privacy.data['AI spending analysis']) list.push({ icon: 'spark', tint: 't-green', title: 'Unusual spending on takeaway', body: `${ti.pct}% above your usual this month.`, go: 'insights' });
+  return list;
+}
+</script>
+<script>
+// First I build each screen as a function that returns HTML
+const screens = {};
+
+screens.splash = () => `
+  <div class="splash">
+    <div class="word">FIMA</div>
+    ${mascot('happy', 150)}
+    <h1>Your money,<br>made easier!</h1>
+    <button class="btn honey" onclick="startOnboarding()">Sign up</button>
+    <button class="btn lav" onclick="go('login')">Log in</button>
+  </div>`;
+
+function startOnboarding() {
+  ui.onb = { step: 1, name: '', email: '', pass: '', uni: 'Deakin University', income: '', weekly: 400, bank: '', rent: 420, rentEvery: 'Fortnight', phone: 35, balance: '' };
+  go('onboard');
+}
+function doLogin() {
+  const email = document.getElementById('lemail').value.trim().toLowerCase(), pass = document.getElementById('lpass').value;
+  const err = m => { document.getElementById('lerr').innerHTML = `<p class="err">${m}</p>`; };
+  if (!email.includes('@')) return err('Enter the email you signed up with.');
+  if (pass.length < 6) return err('Enter your password (at least 6 characters).');
+  if (!S.account || S.account.email !== email) return err('No FIMA account was found for this email on this device. Sign up first, or try the demo account.');
+  S.onboarded = true; save(); go('home');
+  toast(`Welcome back, ${esc(S.user.name)}`);
+}
+function loadDemo() {
+  const theme = S.theme; S = seedData(); S.theme = theme; S.onboarded = true;
+  ui = { screen: 'home', planTab: 'budget', period: 'Week', filter: 'All', check: '', billView: 'list', calSel: null, sheet: null, dialog: null, onb: {} };
+  save(); render(); toast('Demo account loaded: Priya');
+}
+
+screens.login = () => `<button class="back" onclick="go('splash')">${icon('back', 20)} Back</button>
+  <div class="center">${mascot('happy', 90)}</div>
+  <h2 class="title center mt">Welcome back</h2><p class="sub center">Log in to see your safe-to-spend.</p>
+  <div class="field mt"><label for="lemail">Email</label><input id="lemail" type="email" autocomplete="email" placeholder="you@deakin.edu.au"></div>
+  <div class="field"><label for="lpass">Password</label><input id="lpass" type="password" autocomplete="current-password" placeholder="At least 6 characters" onkeydown="if(event.key==='Enter')doLogin()"></div>
+  <div id="lerr"></div>
+  <button class="btn primary block" onclick="doLogin()">Log in</button>
+  <button class="link block mt" style="width:100%" onclick="toast('Password reset email sent (simulated)')">Forgot password?</button>
+  <p class="sub center mt">No account yet? <button class="link" onclick="startOnboarding()">Sign up</button></p>
+  <p class="sub center" style="margin-top:4px">Just looking? <button class="link" onclick="loadDemo()">Try the demo account</button></p>
+  <p class="sub center" style="font-size:12px;margin-top:14px">Prototype: accounts are saved in this browser only and the password check is simulated.</p>`;
+
+screens.onboard = () => {
+  const o = ui.onb;
+  const bar = `<div class="steps" aria-label="Step ${o.step} of 3">${[1, 2, 3].map(i => `<i class="${i <= o.step ? 'on' : ''}"></i>`).join('')}</div>`;
+  const back = `<button class="back" onclick="${o.step === 1 ? "go('splash')" : 'onbStep(-1)'}">${icon('back', 20)} Step ${o.step} of 3</button>`;
+  if (o.step === 1) return `${back}${bar}
+    <h2 class="title">Let's set up FIMA</h2><p class="sub">It takes about a minute. You can change this later.</p>
+    <div class="field mt"><label for="oname">What should we call you?</label><input id="oname" value="${esc(o.name)}" placeholder="Your first name" autocomplete="given-name" oninput="ui.onb.name=this.value"></div>
+    <div class="field"><label for="oemail">Email</label><input id="oemail" type="email" value="${esc(o.email)}" placeholder="you@deakin.edu.au" autocomplete="email" oninput="ui.onb.email=this.value"></div>
+    <div class="field"><label for="opass">Create a password</label><input id="opass" type="password" value="${esc(o.pass)}" placeholder="At least 6 characters" autocomplete="new-password" oninput="ui.onb.pass=this.value"></div>
+    <div class="field"><label for="ouni">Where do you study?</label><select id="ouni" onchange="ui.onb.uni=this.value">
+      ${['Deakin University', 'Monash University', 'RMIT University', 'University of Melbourne', 'Swinburne University', 'Other'].map(u => `<option ${u === o.uni ? 'selected' : ''}>${u}</option>`).join('')}</select></div>
+    <div id="oerr"></div>
+    <button class="btn primary block mt" onclick="onbStep(1)">Continue</button>`;
+
+  if (o.step === 2) {
+    const opts = [['casual', 'Casual or part-time work'], ['allowance', 'Allowance or scholarship'], ['family', 'Family support'], ['mix', 'A mix of these']];
+    return `${back}${bar}
+    <h2 class="title">How do you usually get paid?</h2><p class="sub">FIMA plans around changing income, not a fixed salary.</p>
+    <div class="mt" role="radiogroup">${opts.map(([k, l]) => `<button class="opt ${o.income === k ? 'on' : ''}" role="radio" aria-checked="${o.income === k}" onclick="ui.onb.income='${k}';render()"><span class="radio"></span>${l}</button>`).join('')}</div>
+    <div class="field"><label for="oweek">About how much do you get in a usual week?</label><input id="oweek" type="number" inputmode="decimal" min="0" value="${o.weekly}" oninput="ui.onb.weekly=+this.value"></div>
+    <h3 style="font-size:16px;margin:18px 0 8px">Track spending automatically?</h3>
+    ${o.bank === 'connected'
+      ? `<div class="card t-green row" style="border:0"><span>${icon('check')} <b>Bank connected (read-only)</b></span><button class="link" onclick="ui.onb.bank='';render()">Undo</button></div>`
+      : `<button class="btn primary block" onclick="openSheet('consent',{from:'onboard'})">${icon('bank', 20)} Connect my bank (optional)</button>
+         <p class="sub center" style="margin:8px 0">${icon('lock', 14)} Read-only. You choose what to share.</p>
+         <button class="opt ${o.bank === 'manual' ? 'on' : ''}" onclick="ui.onb.bank='manual';render()"><span class="radio"></span>Enter transactions manually instead</button>`}
+    <div id="oerr"></div>
+    <button class="btn primary block mt" onclick="onbStep(1)">Continue</button>`;
+  }
+
+  if (o.step === 3) return `${back}${bar}
+    <h2 class="title">Your regular costs</h2><p class="sub">These are set aside first so your safe-to-spend is honest.</p>
+    <div class="grid2 mt" style="grid-template-columns:1.2fr 1fr">
+      <div class="field" style="margin:0"><label for="orent">Rent</label><input id="orent" type="number" inputmode="decimal" value="${o.rent}" oninput="ui.onb.rent=+this.value"></div>
+      <div class="field" style="margin:0"><label for="oevery">Every</label><select id="oevery" onchange="ui.onb.rentEvery=this.value">${['Week', 'Fortnight', 'Month'].map(e => `<option ${e === o.rentEvery ? 'selected' : ''}>${e}</option>`).join('')}</select></div>
+    </div>
+    <div class="field"><label for="obal">Money in your account right now</label><input id="obal" type="number" inputmode="decimal" min="0" placeholder="e.g. 1500" value="${o.balance}" oninput="ui.onb.balance=this.value">
+      ${o.bank === 'connected' ? '<small class="muted">Filled in from your connected bank (simulated). You can change it.</small>' : ''}</div>
+    <div class="field"><label for="ophone">Phone plan (monthly)</label><input id="ophone" type="number" inputmode="decimal" value="${o.phone}" oninput="ui.onb.phone=+this.value"></div>
+    <div class="card t-sky" style="border:0">${icon('info', 18)} FIMA will also predict bills like electricity from your history and mark them as <span class="tag pred">predicted</span>.</div>
+    <div id="oerr"></div>
+    <button class="btn cta block mt" onclick="finishOnboarding()">See my safe-to-spend</button>`;
+
+  const c = calc();
+  return `<div class="center" style="padding-top:40px">
+    ${mascot('wow', 120)}
+    <h2 class="title mt">You're all set, ${esc(S.user.name)}!</h2>
+    <p class="sub">Here is what you can safely spend right now.</p>
+    <div class="safe" style="margin:22px 0;text-align:left"><div class="lbl">Safe to spend today</div><div class="big">${money(c.safe)}</div><div class="after">${c.short ? `You're ${money(c.short)} short for bills due in the next 14 days. FIMA will update this when your pay arrives.` : 'after rent, bills and goals'}</div></div>
+    <button class="btn primary block" onclick="go('home')">Go to my dashboard</button></div>`;
+};
+
+function onbStep(d) {
+  const o = ui.onb, err = document.getElementById('oerr');
+  if (d > 0 && o.step === 1 && !o.name.trim()) { err.innerHTML = '<p class="err">Enter your first name to continue.</p>'; document.getElementById('oname').focus(); return; }
+  if (d > 0 && o.step === 1 && !o.email.includes('@')) { err.innerHTML = '<p class="err">Enter a valid email address.</p>'; document.getElementById('oemail').focus(); return; }
+  if (d > 0 && o.step === 1 && o.pass.length < 6) { err.innerHTML = '<p class="err">Your password needs at least 6 characters.</p>'; document.getElementById('opass').focus(); return; }
+  if (d > 0 && o.step === 2 && !o.income) { err.innerHTML = '<p class="err">Choose how you usually get paid.</p>'; return; }
+  if (d > 0 && o.step === 2 && !o.bank) { err.innerHTML = '<p class="err">Connect your bank or choose manual entry.</p>'; return; }
+  o.step += d; render();
+}
+function finishOnboarding() {
+  const o = ui.onb;
+  if (o.balance === '' || !(+o.balance >= 0)) { document.getElementById('oerr').innerHTML = '<p class="err">Enter how much money is in your account right now.</p>'; document.getElementById('obal').focus(); return; }
+  const fresh = seedData();
+  S = Object.assign(fresh, { theme: S.theme });
+  S.user = { name: o.name.trim(), uni: o.uni, income: o.income, bank: o.bank === 'connected' };
+  S.account = { email: o.email.trim().toLowerCase() };
+  S.weeklyIncome = o.weekly || 400;
+  S.balance = +o.balance;
+  S.incomeNote = 'Based on what you told us';
+  const rent = S.bills.find(b => b.id === 'b1');
+  rent.amount = o.rent || 0; rent.every = { Week: 7, Fortnight: 14, Month: 30 }[o.rentEvery];
+  S.bills.find(b => b.id === 'b2').amount = o.phone || 0;
+  if (S.user.bank) {
+    S.incomeNote = 'Estimated from your bank history (simulated)';
+  } else {
+    // A manual user starts with a clean history, not the sample one
+    S.privacy.accounts = []; S.txns = []; S.incomeLog = []; S.subs = []; S.shared = []; S.goals = [];
+    S.bills = S.bills.filter(b => b.id === 'b1' || b.id === 'b2');
+    S.house = { name: 'My share house', members: ['Jo', 'Mia', 'Sam'] };
+  }
+  S.onboarded = true; save();
+  o.step = 4; render();
+}
+
+// Home dashboard (S2)
+function greeting() {
+  const h = new Date().getHours();
+  return h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening';
+}
+function topBar() {
+  const n = notifications().length;
+  return `<div class="top"><div class="logo">${mascot('happy', 30)} FIMA</div>
+    <div class="row"><button class="iconbtn" aria-label="Notifications, ${n} new" onclick="go('notifications')">${icon('bell', 20)}${n ? '<span class="dot"></span>' : ''}</button>
+    <button class="avatar" aria-label="Profile and settings" onclick="go('profile')">${esc(S.user.name.charAt(0).toUpperCase())}</button></div></div>`;
+}
+
+screens.home = () => {
+  const c = calc(), p = periodInfo(), next = c.due[0] || S.bills.slice().sort((a, b) => a.dueIn - b.dueIn)[0];
+  const pct = Math.min(p.spent / p.limit, 1.2);
+  const ti = takeawayInsight();
+  const showTip = S.privacy.data['AI spending analysis'] && !S.insight.dismissed && ti.pct > 0;
+  return `${topBar()}
+  <div class="hello">${greeting()}, ${esc(S.user.name)} 👋</div>
+  <section class="safe ${c.safeState === 'ok' ? '' : c.safeState}" aria-label="Safe to spend">
+    ${mascot(c.safeState === 'ok' ? 'happy' : 'worried', 64)}
+    <div class="lbl">${icon('shield', 16)} Safe to spend today</div>
+    <div class="big">${money(c.safe)}</div>
+    <div class="after">${c.short ? `You're ${money(c.short)} short for bills due in the next 14 days. Add your pay when it arrives.` : 'after rent, bills and goals'}</div>
+    <button class="why" onclick="openSheet('breakdown')">How is this worked out? ${icon('chev', 14, 2.5)}</button>
+  </section>
+  <div class="grid2">
+    <div class="tile t-sky"><small>Available balance</small><b>${money(S.balance, 0)}</b></div>
+    <button class="tile t-orange" style="text-align:left" onclick="go('plan')"><small>Next bill: ${next ? esc(next.name) : 'None'}</small><b>${next ? money(next.amount, 0) : '$0'}</b><small>${next ? `in ${next.dueIn} days` : ''}</small></button>
+  </div>
+
+  <section class="card" aria-labelledby="afford-h">
+    <h3 id="afford-h" style="font-size:16px">Can I afford it?</h3>
+    <p class="sub" style="margin:2px 0 0">Check a purchase before you pay.</p>
+    <div class="afford"><label class="sr" for="check">Purchase amount</label>
+      <input id="check" type="number" inputmode="decimal" min="0" placeholder="$ amount, e.g. 60" value="${esc(ui.check)}" onkeydown="if(event.key==='Enter')checkAfford()">
+      <button class="btn primary" onclick="checkAfford()">Check</button></div>
+    <div id="verdict">${ui.check ? verdictHTML(+ui.check) : ''}</div>
+  </section>
+
+  <section class="card">
+    <h3 style="font-size:16px;margin-bottom:10px">Spending</h3>
+      <div class="chips" style="gap:6px">${['Week', 'Month', 'Custom'].map(k => `<button class="chip ${ui.period === k ? 'on' : ''}" style="height:30px;padding:0 10px;font-size:12.5px" onclick="ui.period='${k}';render()">${k}</button>`).join('')}</div>
+    <div class="row mt"><span class="sub">${p.label}</span><span class="amt">${money(p.spent, 0)} <span class="muted" style="font-weight:500">of ${money(p.limit, 0)}</span></span></div>
+    <div class="bar" style="margin-top:8px"><i class="${pct > 1 ? 'over' : pct > .8 ? 'warn' : ''}" style="width:${Math.min(pct, 1) * 100}%"></i></div>
+    <div class="ontrack">${mascot(pct > .8 ? 'worried' : 'happy', 28)}<span class="${pct > .8 ? 'red' : ''}">${pct > 1 ? 'You are over your limit for this period.' : pct > .8 ? 'Getting close to your limit. Slow down a little.' : "You're on track! Keep it up."}</span></div>
+    ${chartHTML()}
+  </section>
+
+  <div class="sec"><h3>Upcoming payments</h3><button class="link" onclick="go('plan')">See all</button></div>
+  <div class="card list" style="padding:4px 16px">${S.bills.slice().sort((a, b) => a.dueIn - b.dueIn).slice(0, 3).map(billRow).join('')}</div>
+
+  ${showTip ? `<button class="tip" onclick="go('insights')">${icon('spark', 20)}<span style="flex:1">Tip: takeaway is up ${ti.pct}% this month</span>${icon('chev', 16)}</button>` : ''}
+  <p class="sub center" style="font-size:12px">Prototype: all balances and transactions are sample data.</p>`;
+};
+
+function billRow(b) {
+  return `<div class="item"><span class="ic ${b.predicted ? 't-honey' : 't-orange'}">${icon(b.name === 'Rent' ? 'home' : 'bell', 18)}</span>
+    <span class="grow"><b>${esc(b.name)}</b><small>in ${b.dueIn} days ${b.predicted ? '<span class="tag pred">predicted</span>' : ''}</small></span>
+    <span class="amt">${b.predicted ? '~' : ''}${money(b.amount)}</span></div>`;
+}
+
+function chartHTML() {
+  let cols = [];
+  if (ui.period === 'Week') {
+    cols = ['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((d, i) => {
+      const ago = 2 - i;
+      return { l: d, v: ago < 0 ? 0 : dayTotal(ago), cls: ago === 0 ? 'today' : ago < 0 ? 'future' : '' };
+    });
+  } else if (ui.period === 'Month') {
+    cols = [3, 2, 1, 0].map((w, i) => ({ l: w === 0 ? 'This wk' : `Wk ${i + 1}`, v: sum(S.txns.filter(t => t.cat !== 'Rent' && Math.floor((t.daysAgo + 4) / 7) === w).map(t => t.amount)), cls: w === 0 ? 'today' : '' }));
+  } else {
+    cols = Array.from({ length: 14 }, (_, i) => { const ago = 13 - i; return { l: ago === 0 ? 'Now' : '', v: dayTotal(ago), cls: ago === 0 ? 'today' : '' }; });
+  }
+  const max = Math.max(...cols.map(c => c.v), 1);
+  return `<div class="chart" role="img" aria-label="Spending chart">${cols.map(c => `<div class="col"><span class="${c.cls}" style="height:${c.cls === 'future' ? 6 : Math.max(c.v / max * 80, 4)}%" title="${money(c.v)}"></span><small>${c.l}</small></div>`).join('')}</div>`;
+}
+
+// The "Can I afford it?" check uses the safe-to-spend number
+function checkAfford() {
+  const v = document.getElementById('check').value;
+  ui.check = v;
+  document.getElementById('verdict').innerHTML = v && +v > 0 ? verdictHTML(+v) : '<p class="err" style="margin:10px 0 0">Enter an amount above $0.</p>';
+}
+function verdictHTML(a) {
+  const c = calc();
+  if (a <= c.safe) return `<div class="verdict t-green">${mascot('happy', 44)}<div><b>Yes, you can afford this</b><p>You'd still have ${money(c.safe - a)} safe to spend after this.</p>
+    <div class="chips"><button class="btn primary sm" onclick="openSheet('add',{amount:${a}})">Log this purchase</button><button class="btn ghost sm" onclick="openSheet('saveInstead',{amount:${a}})">Save it instead</button></div></div></div>`;
+  if (a <= S.balance) return `<div class="verdict t-honey">${mascot('worried', 44)}<div><b>Careful, this is over your safe amount</b><p>It would use ${money(a - c.safe)} that is set aside for bills and goals. Could it wait until after payday?</p>
+    <button class="btn ghost sm" onclick="openSheet('breakdown')">See what's set aside</button></div></div>`;
+  return `<div class="verdict t-orange">${mascot('worried', 44)}<div><b>Not right now</b><p>This is more than your whole balance of ${money(S.balance)}.</p></div></div>`;
+}
+
+// Expenses (S3) with income tracking
+screens.expenses = () => {
+  const month = S.txns.filter(t => t.daysAgo <= 29);
+  const total = sum(month.map(t => t.amount));
+  const inc = (S.incomeLog || []).filter(t => t.daysAgo <= 29);
+  const incTotal = sum(inc.map(t => t.amount));
+  const byCat = EXP_CATS.map(c => ({ c, v: sum(month.filter(t => t.cat === c).map(t => t.amount)) })).filter(x => x.v > 0);
+  let list = [];
+  if (ui.filter === 'All' || ui.filter === 'Income') list = list.concat((S.incomeLog || []).map(t => Object.assign({ income: true }, t)));
+  if (ui.filter !== 'Income') list = list.concat(S.txns.filter(t => ui.filter === 'All' || t.cat === ui.filter));
+  list.sort((a, b) => a.daysAgo - b.daysAgo);
+  let lastDay = -1;
+  return `<div class="top"><h1 class="title">Expenses</h1><button class="iconbtn" aria-label="Notifications" onclick="go('notifications')">${icon('bell', 20)}</button></div>
+  <div class="grid2"><div class="tile t-green"><small>Money in (30 days)</small><b>${money(incTotal, 0)}</b></div><div class="tile t-orange"><small>Money out (30 days)</small><b>${money(total, 0)}</b></div></div>
+  <section class="card"><div class="row" style="align-items:center">
+    <div><span class="sub">Spending by category</span>
+      <div style="margin-top:8px;display:grid;gap:4px">${byCat.length ? byCat.map(x => `<span style="font-size:13px;display:flex;align-items:center;gap:6px"><i style="width:10px;height:10px;border-radius:3px;background:${CAT_COL[x.c]}"></i>${x.c} <b style="margin-left:auto;padding-left:10px">${money(x.v, 0)}</b></span>`).join('') : '<span class="sub">No spending yet.</span>'}</div></div>
+    ${donut(byCat, total)}</div></section>
+  <div class="chips scroll" role="tablist" aria-label="Filter">${['All', 'Income', ...EXP_CATS].map(c => `<button class="chip ${ui.filter === c ? 'on' : ''}" role="tab" aria-selected="${ui.filter === c}" onclick="ui.filter='${c}';render()">${c}</button>`).join('')}</div>
+  <div class="card list mt" style="padding:4px 16px">
+    ${list.length ? list.map(t => {
+      const head = t.daysAgo !== lastDay ? `<div class="sub" style="padding-top:12px;font-weight:600">${t.daysAgo === 0 ? 'Today' : t.daysAgo === 1 ? 'Yesterday' : t.daysAgo + ' days ago'}</div>` : '';
+      lastDay = t.daysAgo;
+      if (t.income) return `${head}<button class="item" style="width:100%;text-align:left" onclick="askDelete('${t.id}',true)"><span class="ic t-green">${icon('wallet', 18)}</span>
+        <span class="grow"><b>${esc(t.name)}</b><small>Income: ${esc(t.source)}</small></span><span class="amt in">+${money(t.amount)}</span></button>`;
+      return `${head}<button class="item" style="width:100%;text-align:left" onclick="askDelete('${t.id}')"><span class="ic ${CAT_TINT[t.cat]}">${icon(t.cat, 18)}</span>
+        <span class="grow"><b>${esc(t.name)}</b><small>${t.cat}</small></span><span class="amt">-${money(t.amount)}</span></button>`;
+    }).join('') : `<div class="empty">Nothing here yet. Tap + to add ${ui.filter === 'Income' ? 'your pay' : 'an expense'}.</div>`}
+  </div>`;
+};
+function donut(parts, total) {
+  if (!total) return `<svg width="120" height="120" viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="46" fill="none" stroke="var(--steel-t)" stroke-width="18"/></svg>`;
+  const r = 46, c = 2 * Math.PI * r; let acc = 0;
+  const segs = parts.map(p => { const len = p.v / total * c; const s = `<circle cx="60" cy="60" r="${r}" fill="none" stroke="${CAT_COL[p.c]}" stroke-width="18" stroke-dasharray="${len} ${c - len}" stroke-dashoffset="${-acc}" transform="rotate(-90 60 60)"/>`; acc += len; return s; }).join('');
+  return `<svg width="120" height="120" viewBox="0 0 120 120" role="img" aria-label="Spending by category">${segs}</svg>`;
+}
+function askDelete(id, isIncome) {
+  const listName = isIncome ? 'incomeLog' : 'txns';
+  const t = S[listName].find(x => x.id === id);
+  ui.dialog = { title: isIncome ? 'Delete this income?' : 'Delete this expense?', body: `${esc(t.name)}, ${money(t.amount)}. Your balance and safe-to-spend will update.`, ok: isIncome ? 'Delete income' : 'Delete expense', danger: true, action: () => {
+    S[listName] = S[listName].filter(x => x.id !== id); S.balance += isIncome ? -t.amount : t.amount; save(); toast(isIncome ? 'Income deleted' : 'Expense deleted');
+  } };
+  renderLayer();
+}
+</script>
+<script>
+// Plan: Budget (S4) and Goals with emergency fund (S5)
+screens.plan = () => `
+  <div class="top"><h1 class="title">Plan</h1><button class="iconbtn" aria-label="Notifications" onclick="go('notifications')">${icon('bell', 20)}</button></div>
+  <div class="seg" role="tablist">${['budget', 'goals'].map(k => `<button role="tab" aria-selected="${ui.planTab === k}" class="${ui.planTab === k ? 'on' : ''}" onclick="ui.planTab='${k}';render()">${k === 'budget' ? 'Budget' : 'Goals'}</button>`).join('')}</div>
+  ${ui.planTab === 'budget' ? budgetHTML() : goalsHTML()}`;
+
+function budgetHTML() {
+  const c = calc();
+  const incomeLabel = { casual: 'Casual or part-time work', allowance: 'Allowance or scholarship', family: 'Family support', mix: 'A mix of income' }[S.user.income] || 'Casual or part-time work';
+  return `<section class="card t-sky" style="border:0">
+    <div class="row"><div><span class="sub">Your usual income (${incomeLabel.toLowerCase()})</span><div class="title">${money(S.weeklyIncome, 0)}<span class="sub" style="font-size:14px"> / week</span></div><small class="muted">${esc(S.incomeNote)}</small></div>
+    <button class="btn primary sm" onclick="openSheet('income')">${icon('edit', 16)} Adjust</button></div></section>
+  <div class="sec" style="margin-top:6px"><h3>This week's budget</h3><span class="sub">${money(c.weekLimit, 0)} to spend</span></div>
+  <div class="card list" style="padding:4px 16px">${CATS.map(cat => {
+    const lim = catLimit(cat), sp = spent(2, cat), pct = lim ? sp / lim : 0;
+    const left = lim - sp;
+    return `<div class="item" style="display:block"><div class="row"><span style="display:flex;gap:10px;align-items:center"><span class="ic ${CAT_TINT[cat]}" style="width:32px;height:32px">${icon(cat, 16)}</span><b style="font-weight:600">${cat}</b>${S.limitOverride[cat] ? '<span class="tag soft">your limit</span>' : ''}</span>
+      <span class="sub ${pct > .8 ? 'red' : ''}">${left >= 0 ? money(left, 0) + ' left' : 'Over by ' + money(-left, 0)}</span></div>
+      <div class="bar" style="margin-top:8px"><i class="${pct > 1 ? 'over' : pct > .8 ? 'warn' : ''}" style="width:${Math.min(pct, 1) * 100}%"></i></div></div>`;
+  }).join('')}</div>
+  <div class="sec"><h3>Upcoming bills</h3><div class="chips" style="gap:6px">${[['list', 'List'], ['calendar', 'Calendar']].map(([k, l]) => `<button class="chip ${ (ui.billView || 'list') === k ? 'on' : ''}" style="height:30px;padding:0 10px;font-size:12.5px" onclick="ui.billView='${k}';render()">${icon(k === 'list' ? 'list' : 'cal', 14)} ${l}</button>`).join('')}</div></div>
+  ${ui.billView === 'calendar' ? calendarHTML() : `<div class="card list" style="padding:4px 16px">${S.bills.slice().sort((a, b) => a.dueIn - b.dueIn).map(b => `
+    <div class="item"><span class="ic ${b.predicted ? 't-honey' : 't-orange'}">${icon(b.name === 'Rent' ? 'home' : 'receipt', 18)}</span>
+      <span class="grow"><b>${esc(b.name)}</b><small>${b.predicted ? '~' : ''}${money(b.amount)}, in ${b.dueIn} days ${b.predicted ? '<span class="tag pred">predicted</span>' : ''}</small></span>
+      <button class="iconbtn" style="width:36px;height:36px;${b.remind ? 'background:var(--green-t);border-color:var(--green)' : ''}" aria-pressed="${b.remind}" aria-label="Reminder for ${esc(b.name)}" onclick="toggleRemind('${b.id}')">${icon('bell', 16)}</button>
+      <button class="btn ghost sm" onclick="payBill('${b.id}')">Paid</button></div>`).join('') || '<div class="empty">No bills yet. Add one with + and turn on "Repeats every month".</div>'}</div>`}
+  <p class="sub">Predicted bills are estimated from your past payments. FIMA sets them aside so they are never a surprise.</p>`;
+}
+function billsOn(diff) {
+  return S.bills.filter(b => diff >= b.dueIn && (diff - b.dueIn) % b.every === 0);
+}
+function calendarHTML() {
+  const today = new Date(), dow = (today.getDay() + 6) % 7;
+  const days = Array.from({ length: 35 }, (_, i) => { const d = new Date(today); d.setDate(today.getDate() - dow + i); return { d, diff: i - dow }; });
+  if (ui.calSel == null) { const first = days.find(x => x.diff >= 0 && billsOn(x.diff).length); ui.calSel = first ? first.diff : 0; }
+  const sel = days.find(x => x.diff === ui.calSel) || days[dow];
+  const selBills = sel.diff >= 0 ? billsOn(sel.diff) : [];
+  const month = today.toLocaleDateString('en-AU', { month: 'long', year: 'numeric' });
+  return `<section class="card"><div class="row"><b style="font-family:var(--head)">${month}</b><span class="sub">Next 5 weeks</span></div>
+    <div class="cal">${['M', 'T', 'W', 'T', 'F', 'S', 'S'].map(d => `<small>${d}</small>`).join('')}
+    ${days.map(x => {
+      const bl = x.diff >= 0 ? billsOn(x.diff) : [];
+      const cls = [x.diff < 0 ? 'past' : '', x.diff === 0 ? 'today' : '', bl.length ? 'bill' : '', bl.length && bl.every(b => b.predicted) ? 'pred' : '', x.diff === ui.calSel ? 'sel' : ''].join(' ');
+      return `<button class="${cls}" ${x.diff < 0 ? 'disabled' : ''} aria-label="${x.d.toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long' })}${bl.length ? ', ' + bl.length + ' bill due' : ''}" onclick="ui.calSel=${x.diff};render()">${x.d.getDate()}</button>`;
+    }).join('')}</div>
+    <div class="row sub" style="justify-content:flex-start;gap:14px;margin-top:10px;font-size:12px"><span><i style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--orange)"></i> Bill due</span><span><i style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--honey)"></i> Predicted</span><span><i style="display:inline-block;width:10px;height:10px;border-radius:50%;box-shadow:inset 0 0 0 2px var(--green)"></i> Today</span></div>
+    <div class="list mt" style="border-top:1px solid var(--line)"><div class="sub" style="padding-top:10px;font-weight:600">${sel.d.toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long' })}</div>
+    ${selBills.length ? selBills.map(b => `<div class="item"><span class="grow"><b>${esc(b.name)}</b><small>${b.predicted ? '<span class="tag pred">predicted</span>' : 'Reminder ' + (b.remind ? 'on' : 'off')}</small></span><span class="amt">${b.predicted ? '~' : ''}${money(b.amount)}</span></div>`).join('') : '<p class="sub">Nothing due on this day.</p>'}</div>
+  </section>`;
+}
+function toggleRemind(id) {
+  const b = S.bills.find(x => x.id === id); b.remind = !b.remind; save(); render();
+  toast(b.remind ? `We'll remind you 3 days before ${b.name} is due` : `Reminder off for ${b.name}`);
+}
+function payBill(id) {
+  const b = S.bills.find(x => x.id === id);
+  ui.dialog = { title: `Mark ${b.name} as paid?`, body: `${money(b.amount)} will come off your balance and the next one will be scheduled in ${b.every} days.`, ok: 'Mark as paid', action: () => {
+    S.balance -= b.amount;
+    S.txns.push({ id: Math.random().toString(36).slice(2), daysAgo: 0, amount: b.amount, cat: b.cat, name: b.name });
+    b.dueIn += b.every; save(); toast(`${b.name} paid. Next one in ${b.dueIn} days`);
+  } };
+  renderLayer();
+}
+
+function goalsHTML() {
+  const c = calc();
+  const normal = S.goals.filter(g => !g.emergency), em = S.goals.find(g => g.emergency);
+  const card = g => {
+    const remain = Math.max(g.target - g.saved, 0), weeks = g.weekly ? Math.ceil(remain / g.weekly) : null;
+    return `<section class="card goal">${ring(g.saved / g.target, 72, g.emergency ? '#F6AE2D' : '#5FCF6A', Math.round(g.saved / g.target * 100) + '%')}
+      <div style="flex:1"><b style="font-family:var(--head)">${esc(g.name)}</b><div class="sub">${money(g.saved, 0)} of ${money(g.target, 0)}</div>
+      <div class="sub">${remain ? `${money(remain, 0)} to go${weeks ? `, about ${weeks} week${weeks > 1 ? 's' : ''} at ${money(g.weekly, 0)}/week` : ''}` : 'Goal reached! 🎉'}</div>
+      ${remain && g.weekly ? `<div class="ontrack" style="margin-top:6px">${mascot('happy', 24)} Keep going! You're on track.</div>` : ''}
+      ${remain ? `<button class="btn ghost sm mt" onclick="openSheet('goalAdd',{id:'${g.id}'})">Add money</button>` : ''}</div></section>`;
+  };
+  let emHTML = '';
+  if (em) {
+    const remain = Math.max(em.target - em.saved, 0);
+    const sug = c.safe >= 50 ? Math.min(Math.max(round5(c.safe * 0.2), 5), remain) : 0;
+    emHTML = `<section class="card" style="border:2px solid var(--honey)">
+      <div class="row"><span class="tag" style="background:var(--honey);color:#1E2A5E">${icon('umbrella', 12)} Emergency fund</span><span class="sub">For surprises</span></div>
+      <div class="goal mt">${ring(em.saved / em.target, 72, '#F6AE2D', Math.round(em.saved / em.target * 100) + '%')}
+      <div><b style="font-family:var(--head)">${money(em.saved, 0)} of ${money(em.target, 0)}</b><div class="sub">A small buffer for a laptop repair, a medical bill or fewer shifts.</div></div></div>
+      <div class="verdict t-green" style="margin-top:14px;align-items:center">${sug
+        ? `<div style="flex:1"><b>You can safely move ${money(sug, 0)} this week</b><p style="margin:0">Worked out after rent, bills and your other goals.</p></div><button class="btn primary sm" onclick="moveEmergency(${sug})">Move ${money(sug, 0)}</button>`
+        : `<div><b>${remain ? 'Not this week' : 'Fund complete'}</b><p style="margin:0">${remain ? 'Rent and bills come first. FIMA will suggest an amount when there is room.' : 'Nice work. Your buffer is ready if you need it.'}</p></div>`}</div>
+    </section>`;
+  }
+  if (!em) {
+    const rent = S.bills.find(b => b.id === 'b1');
+    const monthRent = rent ? rent.amount * 30 / rent.every : 800;
+    const target = Math.max(300, Math.round(monthRent / 2 / 50) * 50);
+    emHTML = `<section class="card" style="border:2px dashed var(--honey)">
+      <span class="tag" style="background:var(--honey);color:#1E2A5E">${icon('umbrella', 12)} Emergency fund</span>
+      <h3 style="font-size:17px;margin:10px 0 4px">Set up an emergency fund</h3>
+      <p class="sub" style="margin:0 0 12px">A small buffer for surprises like a laptop repair, a medical bill or fewer shifts. We suggest starting with <b>${money(target, 0)}</b>, about half a month of rent.</p>
+      <button class="btn honey block" onclick="openSheet('newGoal',{emergency:true,target:${target}})">Create emergency fund</button></section>`;
+  }
+  return `${emHTML}${normal.map(card).join('')}
+    <button class="btn block" style="border:2px dashed var(--line);height:54px" onclick="openSheet('newGoal')">${icon('plus', 18)} New saving goal</button>`;
+}
+function moveEmergency(a) {
+  const g = S.goals.find(x => x.emergency); g.saved += a; S.balance -= a; save(); render();
+  toast(`${money(a, 0)} moved to your emergency fund`);
+}
+
+// Split bills with housemates (S6)
+screens.split = () => {
+  const owed = owedToYou(), owe = youOwe();
+  return `<div class="top"><div><h1 class="title">Split bills</h1><div class="sub">${esc(S.house.name)}</div></div><button class="iconbtn" aria-label="Notifications" onclick="go('notifications')">${icon('bell', 20)}</button></div>
+  <div class="members">${['You', ...S.house.members].map(p => `<span class="avatar" style="background:${PEOPLE_COL[p] || '#86BBD8'}" title="${p}">${p === 'You' ? 'You' : p}</span>`).join('')}
+    <button class="avatar add" aria-label="Invite a housemate" onclick="toast('Invite link copied (simulated)')">${icon('plus', 18)}</button></div>
+  <div class="grid2"><div class="tile t-green"><small>You're owed</small><b>${money(owed, 0)}</b></div><div class="tile t-sky"><small>You owe</small><b>${money(owe, 0)}</b></div></div>
+  ${S.shared.slice().reverse().map(billCard).join('')}
+  <button class="btn cta block" onclick="openSheet('addShared')">${icon('plus', 18)} Add shared bill</button>`;
+};
+function billCard(b) {
+  const people = Object.keys(b.shares);
+  const paidN = people.filter(p => b.paid[p]).length;
+  const done = paidN === people.length;
+  const eachText = b.split === 'Equal' ? `Split equally, ${money(b.shares.You)} each` : 'Custom split';
+  return `<section class="card">
+    <div class="row"><b style="font-family:var(--head);font-size:17px">${esc(b.name)}</b><span class="amt" style="font-size:17px">${money(b.total, 0)}</span></div>
+    <div class="sub">${eachText}. Paid by ${b.paidBy === 'You' ? 'you' : b.paidBy}. ${done ? '<span class="tag paid">Settled</span>' : `${paidN} of ${people.length} paid`}</div>
+    <div class="bar" style="margin:10px 0 6px"><i style="width:${paidN / people.length * 100}%"></i></div>
+    ${people.map(p => {
+      const isPaid = b.paid[p];
+      let action = '';
+      if (!isPaid && b.paidBy === 'You' && p !== 'You') {
+        action = S.reminded[b.id + p]
+          ? `<button class="link" onclick="markReceived('${b.id}','${p}')">Mark received</button>`
+          : `<button class="btn cta sm" onclick="remind('${b.id}','${p}')">${icon('send', 14)} Remind</button>`;
+      }
+      if (!isPaid && p === 'You' && b.paidBy !== 'You') action = `<button class="btn primary sm" onclick="payShare('${b.id}')">Pay ${b.paidBy} ${money(b.shares.You, 0)}</button>`;
+      return `<div class="person"><span class="avatar ${p === 'You' ? 'me' : ''}" style="background:${PEOPLE_COL[p] || '#86BBD8'}">${p === 'You' ? 'You' : p.charAt(0)}</span><span class="grow">${p}</span>
+        ${isPaid ? '<span class="tag paid">Paid</span>' : p === 'You' && action ? '' : `<span class="tag owes">${p === 'You' ? 'You owe' : 'Owes'} ${money(b.shares[p], 0)}</span>`}${action}</div>`;
+    }).join('')}</section>`;
+}
+function remind(id, p) {
+  const b = S.shared.find(x => x.id === id);
+  S.reminded[id + p] = true; save(); render();
+  toast(`Friendly reminder sent to ${p} for their ${money(b.shares[p], 0)} share of ${b.name}`);
+}
+function markReceived(id, p) {
+  const b = S.shared.find(x => x.id === id); b.paid[p] = true; S.balance += b.shares[p]; save(); render();
+  toast(`${p} paid you ${money(b.shares[p], 0)}`);
+}
+function payShare(id) {
+  const b = S.shared.find(x => x.id === id);
+  ui.dialog = { title: `Pay ${b.paidBy} ${money(b.shares.You)}?`, body: 'In the full app this opens your banking app with the details filled in. Here it records the payment.', ok: 'Record payment', action: () => {
+    b.paid.You = true; S.balance -= b.shares.You;
+    S.txns.push({ id: Math.random().toString(36).slice(2), daysAgo: 0, amount: b.shares.You, cat: 'Other', name: `${b.name} share to ${b.paidBy}` });
+    save(); toast(`Payment to ${b.paidBy} recorded`);
+  } };
+  renderLayer();
+}
+
+// Insights: AI suggestions and student savings (S7)
+const TIPS = [
+  { t: 'Concession travel', s: 'Student fares', i: 'Transport', body: 'Eligible full-time students can apply for a public transport concession. Check the eligibility rules on your state transport website before applying.' },
+  { t: 'Cheaper groceries', s: 'Near campus', i: 'Groceries', body: 'Discount supermarkets and late-afternoon markdowns can lower your weekly shop. Planning meals before you shop helps avoid extra takeaway.' },
+  { t: 'Textbooks for less', s: 'Library and second hand', i: 'Uni', body: 'Check the library reserve collection and second-hand student groups before buying new textbooks.' },
+  { t: 'Energy bills', s: 'Compare plans', i: 'Other', body: 'Government comparison sites let your household compare electricity plans for free. A cheaper plan lowers every housemate\'s share.' },
+  { t: 'Student discounts', s: 'Show your student ID', i: 'Fun', body: 'Many cinemas, software providers and shops offer student prices. Always ask if a student rate is available.' },
+  { t: 'Free food on campus', s: 'Clubs and events', i: 'Takeaway', body: 'Student clubs and welfare programs often run free breakfasts and events. Your student union website lists them.' }
+];
+screens.insights = () => {
+  const ai = S.privacy.data['AI spending analysis'];
+  const ti = takeawayInsight();
+  const max = Math.max(ti.now, ti.usual);
+  const suggestion = !ai
+    ? `<section class="card center">${icon('lock', 28)}<h3 style="font-size:16px;margin:8px 0 4px">AI spending analysis is off</h3><p class="sub">You turned this off in Privacy. FIMA will not analyse your spending until you turn it back on.</p><button class="btn primary sm mt" onclick="go('privacy')">Open Privacy settings</button></section>`
+    : S.insight.dismissed
+      ? `<section class="card row"><span class="sub">Suggestion dismissed.</span><button class="link" onclick="S.insight.dismissed=false;save();render()">Show again</button></section>`
+      : ti.pct <= 0
+        ? `<section class="card t-green" style="border:0"><b>Your spending is on track</b><p class="sub" style="margin:4px 0 0">No unusual spending found this month.</p></section>`
+        : `<section class="card"><span class="tag soft">Optional suggestion</span>
+          <h3 style="font-size:18px;margin:10px 0 2px">Takeaway: ${money(ti.now, 0)} this month</h3>
+          <p class="sub" style="margin:0">${ti.pct}% above your usual spending (${money(ti.usual, 0)})</p>
+          <div class="row" style="align-items:flex-end"><div class="compare" role="img" aria-label="Usual ${money(ti.usual, 0)}, now ${money(ti.now, 0)}">
+            <div style="height:${ti.usual / max * 100}%;background:var(--sky)"></div><div style="height:${ti.now / max * 100}%;background:var(--orange)"></div></div>
+            <div style="flex:1;padding-left:6px"><p style="margin:0 0 10px;font-size:14px">Cooking two more meals at home each week could save about <b>$40 a month</b>.</p>
+            <div style="display:grid;gap:8px"><button class="btn primary sm" onclick="openSheet('limit')">Set a limit</button><button class="btn ghost sm" onclick="dismissInsight()">Dismiss</button></div></div></div>
+          <div class="row sub" style="width:118px;font-size:12px"><span>Usual</span><span>Now</span></div></section>`;
+  const subs = ai ? `<div class="sec"><h3>Subscriptions to review</h3></div>
+    <div class="card list" style="padding:4px 16px">${S.subs.map(u => `<div class="item"><span class="ic t-honey">${icon('receipt', 18)}</span><span class="grow"><b>${esc(u.name)}</b><small>${esc(u.note)}</small></span>
+      <span class="amt">${money(u.amount, 0)}</span>${u.status === 'open' ? `<button class="btn ghost sm" onclick="openSheet('sub',{id:'${u.id}'})">Review</button>` : `<span class="tag ${u.status === 'keep' ? 'paid' : 'pred'}">${u.status === 'keep' ? 'Kept' : 'Reminder set'}</span>`}</div>`).join('')}</div>` : '';
+  return `<div class="top"><h1 class="title">Insights</h1>${mascot('happy', 44)}</div>
+  ${suggestion}${subs}
+  <div class="sec" id="tips"><h3>Student savings and tips</h3></div>
+  <div class="grid2">${TIPS.map((t, i) => `<button class="tile ${CAT_TINT[t.i]}" style="text-align:left" onclick="openSheet('tip',{i:${i}})"><span class="ic" style="background:var(--surface);color:var(--text);width:34px;height:34px;margin-bottom:8px">${icon(t.i, 18)}</span><b style="font-size:14.5px;display:block;font-family:var(--head)">${t.t}</b><small>${t.s}</small></button>`).join('')}</div>
+  <section class="card t-steel" style="border:0"><p style="margin:0 0 8px;font-size:13.5px">${icon('info', 16)} General guidance only, not financial advice.</p>
+    ${S.insight.feedback ? `<b style="font-size:14px">Thanks, this helps FIMA improve its suggestions.</b>` : `<div class="row"><span style="font-size:14px;font-weight:600">Were these insights useful?</span><span class="chips"><button class="chip" onclick="feedback('yes')">Yes</button><button class="chip" onclick="feedback('no')">No</button></span></div>`}</section>`;
+};
+function dismissInsight() { S.insight.dismissed = true; save(); render(); toast('Suggestion dismissed', () => { S.insight.dismissed = false; save(); render(); }); }
+function feedback(v) { S.insight.feedback = v; save(); render(); }
+
+// Notifications
+screens.notifications = () => {
+  const list = notifications();
+  return `<button class="back" onclick="go('home')">${icon('back', 20)} Back</button><h1 class="title" style="margin-bottom:14px">Notifications</h1>
+  ${list.length ? `<div class="card list" style="padding:4px 16px">${list.map(n => `<button class="item" style="width:100%;text-align:left" onclick="go('${n.go}')"><span class="ic ${n.tint}">${icon(n.icon, 18)}</span><span class="grow"><b>${n.title}</b><small>${n.body}</small></span>${icon('chev', 16)}</button>`).join('')}</div>`
+    : `<div class="empty">${mascot('happy', 70)}<p>You're all caught up.</p></div>`}
+  <button class="link" onclick="openSheet('alerts')">Change which alerts you get</button>`;
+};
+
+// Profile and settings
+screens.profile = () => {
+  const inc = { casual: 'Casual or part-time work', allowance: 'Allowance or scholarship', family: 'Family support', mix: 'A mix of income' }[S.user.income] || '';
+  return `<button class="back" onclick="go('home')">${icon('back', 20)} Back</button>
+  <section class="card center"><span class="avatar" style="width:72px;height:72px;font-size:28px;margin:0 auto 10px">${esc(S.user.name.charAt(0).toUpperCase())}</span>
+    <h2 style="font-size:20px">${esc(S.user.name)}</h2><p class="sub" style="margin:2px 0 0">${esc(S.user.uni)}. ${inc}</p></section>
+  <section class="card menu" style="padding:2px 14px">
+    <button onclick="go('privacy')">${icon('shield')}<span class="grow">Privacy and data</span>${icon('chev', 16)}</button>
+    <button onclick="openSheet('alerts')">${icon('bell')}<span class="grow">Notification settings</span>${icon('chev', 16)}</button>
+    <button onclick="openSheet('theme')">${icon('moon')}<span class="grow">Theme</span><span class="sub">${{ system: 'System', light: 'Light', dark: 'Dark' }[S.theme]}</span>${icon('chev', 16)}</button>
+    <button onclick="openSheet('help')">${icon('help')}<span class="grow">Help and support</span>${icon('chev', 16)}</button>
+    <button onclick="openSheet('about')">${icon('info')}<span class="grow">About FIMA</span>${icon('chev', 16)}</button>
+    <button onclick="S.onboarded=false;save();go('splash')">${icon('out')}<span class="grow">Log out</span></button>
+  </section>`;
+};
+
+// Privacy and data control (S8)
+screens.privacy = () => {
+  const p = S.privacy;
+  return `<button class="back" onclick="go('profile')">${icon('back', 20)} Profile</button>
+  <h1 class="title">Privacy and data</h1><p class="sub" style="margin:4px 0 14px">You decide what FIMA can see and use.</p>
+  <div class="sec" style="margin-top:0"><h3>Connected accounts</h3></div>
+  <section class="card">${S.user.bank ? `${p.accounts.map((a, i) => `<div class="row" style="padding:6px 0"><span style="display:flex;gap:10px;align-items:center"><span class="ic t-sky">${icon('bank', 18)}</span><span><b style="font-weight:600;display:block">${a.name}</b><small class="muted">${a.on ? a.detail : 'Not shared with FIMA'}</small></span></span>
+      ${sw('acc' + i, a.on, `toggleAcc(${i})`, 'Share ' + a.name)}</div>`).join('')}
+      <button class="btn ghost block mt" style="color:#C2362B" onclick="disconnectBank()">Disconnect bank</button>`
+    : `<p class="sub" style="margin:0 0 12px">No bank connected. You're using manual entry, and every feature still works.</p><button class="btn primary block" onclick="openSheet('consent',{from:'privacy'})">${icon('bank', 18)} Connect a bank (optional)</button>`}</section>
+  <div class="sec"><h3>Data FIMA can use</h3></div>
+  <section class="card">${Object.keys(p.data).map((k, i) => `<div class="row" style="padding:7px 0"><span><b style="font-weight:600;display:block">${k}</b><small class="muted">${{ Transactions: 'To track spending and predict bills', Balances: 'To work out safe-to-spend', 'AI spending analysis': 'To find unusual spending and suggest savings', 'Push notifications': 'For bill reminders and low-balance alerts' }[k]}</small></span>
+    ${sw('d' + i, p.data[k], `toggleData('${k}')`, k)}</div>`).join('')}</section>
+  <div class="sec"><h3>Your data</h3></div>
+  <section class="card"><button class="btn ghost block" onclick="downloadData()">${icon('download', 18)} Download my data</button>
+    <button class="btn danger block mt" onclick="deleteAll()">${icon('trash', 18)} Delete account and data</button>
+    <p class="sub center" style="margin:10px 0 0;font-size:12.5px">Permanent. You will be asked to confirm.</p></section>
+  <details class="card"><summary style="font-weight:700;cursor:pointer">How your data is shared</summary>
+    <p class="sub">Bank data is shared through the Consumer Data Right (CDR), the Australian Government's open banking scheme. FIMA only gets read-only access, cannot move your money, and never sees your banking password. Consent lasts up to 12 months and you can withdraw it here at any time, after which your bank data is deleted.</p></details>`;
+};
+function sw(id, on, fn, label) {
+  return `<span class="switch"><input type="checkbox" id="${id}" ${on ? 'checked' : ''} onchange="${fn}" aria-label="${esc(label)}"><i></i></span>`;
+}
+function toggleAcc(i) { const a = S.privacy.accounts[i]; a.on = !a.on; save(); render(); toast(a.on ? `${a.name} is now shared` : `${a.name} is no longer shared`); }
+function toggleData(k) {
+  S.privacy.data[k] = !S.privacy.data[k]; save(); render();
+  toast(`${k} ${S.privacy.data[k] ? 'turned on' : 'turned off'}`);
+}
+function disconnectBank() {
+  ui.dialog = { title: 'Disconnect your bank?', body: 'FIMA will stop receiving data straight away and delete the bank data it holds. You can keep using FIMA with manual entry.', ok: 'Disconnect', danger: true, action: () => { S.user.bank = false; S.privacy.accounts = []; save(); toast('Bank disconnected. Bank data deleted'); } };
+  renderLayer();
+}
+function downloadData() {
+  try {
+    const blob = new Blob([JSON.stringify({ exported: new Date().toISOString(), user: S.user, transactions: S.txns, bills: S.bills, goals: S.goals, sharedBills: S.shared }, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'fima-my-data.json'; a.click();
+  } catch (e) { /* downloads may be blocked in some viewers */ }
+  toast('Your data export is ready: fima-my-data.json');
+}
+function deleteAll() {
+  ui.dialog = { title: 'Delete your account and data?', body: 'This permanently deletes your profile, transactions, goals and shared bills. Type DELETE to confirm.', ok: 'Delete everything', danger: true, confirmWord: 'DELETE', action: () => {
+    const theme = S.theme; S = seedData(); S.theme = theme; S.account = null; S.onboarded = false; save(); ui.screen = 'splash'; toast('Your account and data were deleted');
+  } };
+  renderLayer();
+}
+</script>
+<script>
+// Bottom sheets used across the app
+function openSheet(type, data = {}) { ui.sheet = { type, data }; renderLayer(); setTimeout(() => { const f = document.querySelector('#layer [autofocus]'); if (f) f.focus(); }, 60); }
+function closeSheet() { ui.sheet = null; renderLayer(); }
+const sheets = {};
+
+sheets.breakdown = () => {
+  const c = calc();
+  return `<h2>How safe-to-spend is worked out</h2><p class="sub">FIMA sets money aside before telling you what is free to spend.</p>
+  <div class="list mt">
+    <div class="item"><span class="grow"><b>Available balance</b></span><span class="amt">${money(S.balance)}</span></div>
+    ${c.due.map(b => `<div class="item"><span class="grow"><b>${esc(b.name)}</b><small>Due in ${b.dueIn} days ${b.predicted ? '<span class="tag pred">predicted</span>' : ''}</small></span><span class="amt">-${money(b.amount)}</span></div>`).join('')}
+    <div class="item"><span class="grow"><b>Saving goals this week</b><small>${S.goals.filter(g => g.saved < g.target).map(g => esc(g.name)).join(', ')}</small></span><span class="amt">-${money(c.goalSum)}</span></div>
+    ${c.short ? `<div class="item" style="background:var(--orange-t);border-radius:14px;padding:12px;border:0;margin-top:6px"><span class="grow"><b>Short by</b><small>Your next pay should cover this</small></span><span class="amt" style="font-size:18px">${money(c.short)}</span></div>` : ''}
+    <div class="item" style="background:var(--green-t);border-radius:14px;padding:12px;border:0;margin-top:6px"><span class="grow"><b>Safe to spend</b></span><span class="amt" style="font-size:18px">${money(c.safe)}</span></div>
+  </div>
+  <p class="sub">Bills due in the next 14 days are included. Pay is only counted once it arrives, because student income changes from week to week. Tap + and choose Income to add it.</p>
+  <button class="btn primary block" onclick="closeSheet()">Got it</button>`;
+};
+
+sheets.add = d => {
+  d.kind = d.kind || 'expense';
+  const inc = d.kind === 'income';
+  d.cat = d.cat || (inc ? 'Work' : 'Groceries');
+  const cats = inc ? ['Work', 'Allowance', 'Family', 'Other'] : EXP_CATS;
+  return `<div class="seg" style="grid-auto-flow:column">${['expense', 'income'].map(k => `<button class="${d.kind === k ? 'on' : ''}" onclick="setKind('${k}')">${k === 'expense' ? 'Expense' : 'Income'}</button>`).join('')}</div>
+  <h2 class="center">${inc ? 'Add income' : 'Add expense'}</h2>
+  <div class="money"><span>$</span><label class="sr" for="amt">Amount</label><input id="amt" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0.00" value="${d.amount || ''}" autofocus></div>
+  <div id="aerr"></div>
+  <div class="chips" style="justify-content:center;margin-bottom:16px" role="radiogroup" aria-label="${inc ? 'Source' : 'Category'}">${cats.map(c => `<button class="chip ${c === d.cat ? 'on' : ''}" role="radio" aria-checked="${c === d.cat}" onclick="pickCat(this,'${c}')">${inc ? '' : icon(c, 15)} ${c}</button>`).join('')}</div>
+  <div class="field"><label for="anote">Note (optional)</label><input id="anote" placeholder="${inc ? 'e.g. Pay from casual job' : 'e.g. Woolworths'}"></div>
+  ${inc ? '' : `<div class="row card t-steel" style="border:0"><span><b style="display:block;font-weight:600">Repeats every month</b><small class="muted">For rent, subscriptions and bills. FIMA will predict the next one.</small></span>${sw('arec', false, '', 'Repeats every month')}</div>`}
+  <button class="btn cta block" onclick="saveExpense()">${inc ? 'Save income' : 'Save expense'}</button>`;
+};
+function setKind(k) {
+  ui.sheet.data.amount = document.getElementById('amt').value;
+  ui.sheet.data.kind = k; ui.sheet.data.cat = null; renderLayer();
+}
+function pickCat(el, c) {
+  ui.sheet.data.cat = c;
+  el.parentNode.querySelectorAll('.chip').forEach(b => { b.classList.remove('on'); b.setAttribute('aria-checked', 'false'); });
+  el.classList.add('on'); el.setAttribute('aria-checked', 'true');
+}
+function saveExpense() {
+  const amt = parseFloat(document.getElementById('amt').value);
+  if (!(amt > 0)) { document.getElementById('aerr').innerHTML = '<p class="err center">Enter an amount above $0.</p>'; document.getElementById('amt').focus(); return; }
+  const cat = ui.sheet.data.cat, note = document.getElementById('anote').value.trim() || (ui.sheet.data.kind === 'income' && cat === 'Work' ? 'Pay from work' : cat);
+  if (ui.sheet.data.kind === 'income') {
+    S.balance += amt; (S.incomeLog = S.incomeLog || []).push({ id: Math.random().toString(36).slice(2), daysAgo: 0, amount: amt, source: cat, name: note });
+    save(); closeSheet(); render(); toast(`Income added. Safe to spend is now ${money(calc().safe)}`); return;
+  }
+  const rec = document.getElementById('arec').checked;
+  S.txns.push({ id: Math.random().toString(36).slice(2), daysAgo: 0, amount: amt, cat, name: note });
+  S.balance -= amt;
+  if (rec) S.bills.push({ id: 'b' + Date.now(), name: note, amount: amt, dueIn: 30, every: 30, predicted: false, remind: true, cat });
+  ui.check = '';
+  save(); closeSheet(); render();
+  const c = calc();
+  toast(`Saved. Safe to spend is now ${money(c.safe)}${rec ? '. Next one scheduled' : ''}`);
+}
+
+sheets.income = () => `<h2>Adjust your income</h2><p class="sub">Shifts changed? Update what you usually get each week and FIMA will rebalance your budget.</p>
+  <div class="money"><span>$</span><label class="sr" for="inc">Weekly income</label><input id="inc" type="number" inputmode="decimal" min="0" value="${S.weeklyIncome}" oninput="document.getElementById('incprev').textContent=money(round5((+this.value||0)*0.75),0)" autofocus></div>
+  <div class="card t-green" style="border:0">New weekly spending budget: <b id="incprev">${money(calc().weekLimit, 0)}</b><br><small class="muted">About 75% of income, leaving room for rent and savings.</small></div>
+  <button class="btn primary block" onclick="saveIncome()">Update my budget</button>`;
+function saveIncome() {
+  const v = parseFloat(document.getElementById('inc').value);
+  if (!(v >= 0)) return;
+  const before = calc().weekLimit;
+  S.weeklyIncome = v; S.incomeNote = 'Updated by you today'; save(); closeSheet(); render();
+  toast(`Budget updated: ${money(before, 0)} to ${money(calc().weekLimit, 0)} a week`);
+}
+
+sheets.goalAdd = d => {
+  const g = S.goals.find(x => x.id === d.id);
+  return `<h2>Add to ${esc(g.name)}</h2><p class="sub">Moves money from your balance. Safe to spend right now: ${money(calc().safe)}.</p>
+  <div class="money"><span>$</span><label class="sr" for="gamt">Amount</label><input id="gamt" type="number" inputmode="decimal" min="0" placeholder="0" autofocus></div><div id="gerr"></div>
+  <button class="btn primary block" onclick="addToGoal('${g.id}')">Add money</button>`;
+};
+function addToGoal(id) {
+  const g = S.goals.find(x => x.id === id), v = parseFloat(document.getElementById('gamt').value);
+  if (!(v > 0)) { document.getElementById('gerr').innerHTML = '<p class="err center">Enter an amount above $0.</p>'; return; }
+  if (v > calc().safe) { document.getElementById('gerr').innerHTML = `<p class="err center">That is more than your safe-to-spend of ${money(calc().safe)}. Rent and bills come first.</p>`; return; }
+  g.saved += v; S.balance -= v; save(); closeSheet(); render(); toast(`${money(v, 0)} added to ${g.name}`);
+}
+
+sheets.newGoal = d => `<h2>${d.emergency ? 'Create emergency fund' : 'New saving goal'}</h2>
+  <div class="field mt"><label for="gname">What are you saving for?</label><input id="gname" value="${d.emergency ? 'Emergency fund' : ''}" placeholder="e.g. Trip home" autofocus></div>
+  <div class="grid2"><div class="field" style="margin:0"><label for="gtarget">Target ($)</label><input id="gtarget" type="number" inputmode="decimal" value="${d.target || ''}" placeholder="500"></div>
+  <div class="field" style="margin:0"><label for="gweek">Save per week ($)</label><input id="gweek" type="number" inputmode="decimal" value="${d.emergency ? 10 : ''}" placeholder="10"></div></div>
+  <div class="row card t-honey" style="border:0"><span><b style="display:block;font-weight:600">This is an emergency fund</b><small class="muted">FIMA will suggest safe amounts to move each week.</small></span>${sw('gem', !!d.emergency, '', 'This is an emergency fund')}</div>
+  <div id="nerr"></div><button class="btn primary block" onclick="createGoal()">Create goal</button>`;
+function createGoal() {
+  const name = document.getElementById('gname').value.trim(), target = parseFloat(document.getElementById('gtarget').value), weekly = parseFloat(document.getElementById('gweek').value) || 0;
+  const em = document.getElementById('gem').checked;
+  if (!name || !(target > 0)) { document.getElementById('nerr').innerHTML = '<p class="err">Add a name and a target above $0.</p>'; return; }
+  if (em && S.goals.some(g => g.emergency)) { document.getElementById('nerr').innerHTML = '<p class="err">You already have an emergency fund. Add money to it from the Goals tab.</p>'; return; }
+  S.goals.push({ id: 'g' + Date.now(), name, target, saved: 0, weekly, emergency: em }); save(); closeSheet(); render();
+  toast(`${name} created. ${weekly ? money(weekly, 0) + ' a week is now set aside' : ''}`);
+}
+
+sheets.saveInstead = d => {
+  const open = S.goals.filter(g => g.saved < g.target);
+  d.goal = d.goal || (open[0] && open[0].id);
+  if (!open.length) return `<h2>Save ${money(d.amount)} instead?</h2><p class="sub">You don't have a saving goal yet. Create one first and FIMA will put the money there.</p>
+    <button class="btn primary block" onclick="ui.planTab='goals';go('plan')">Go to Goals</button>`;
+  return `<h2>Save ${money(d.amount)} instead?</h2><p class="sub">Skip the purchase and put the money towards a goal.</p>
+  <div class="mt" role="radiogroup">${open.map(g => `<button class="opt ${d.goal === g.id ? 'on' : ''}" role="radio" aria-checked="${d.goal === g.id}" onclick="ui.sheet.data.goal='${g.id}';renderLayer()"><span class="radio"></span><span style="flex:1">${esc(g.name)}</span><span class="sub">${money(g.saved, 0)} of ${money(g.target, 0)}</span></button>`).join('')}</div>
+  <button class="btn primary block" onclick="saveInstead()">Save ${money(d.amount)}</button>`;
+};
+function saveInstead() {
+  const d = ui.sheet.data, g = S.goals.find(x => x.id === d.goal);
+  const amt = Math.min(d.amount, g.target - g.saved);
+  g.saved += amt; S.balance -= amt; ui.check = ''; save(); closeSheet(); render();
+  toast(`Nice choice! ${money(amt)} saved to ${g.name}`);
+}
+
+sheets.addShared = d => {
+  d.split = d.split || 'Equal';
+  const people = ['You', ...S.house.members];
+  return `<h2>Add shared bill</h2>
+  <div class="field mt"><label for="sname">Bill name</label><input id="sname" placeholder="e.g. Groceries, Gas" autofocus></div>
+  <div class="grid2"><div class="field" style="margin:0"><label for="stotal">Total ($)</label><input id="stotal" type="number" inputmode="decimal" placeholder="0.00" oninput="splitPreview()"></div>
+  <div class="field" style="margin:0"><label for="sby">Paid by</label><select id="sby">${people.map(p => `<option>${p}</option>`).join('')}</select></div></div>
+  <div class="seg" style="grid-auto-flow:column">${['Equal', 'Custom'].map(k => `<button class="${d.split === k ? 'on' : ''}" onclick="ui.sheet.data.split='${k}';keepShared()">${k === 'Equal' ? 'Split equally' : 'Custom amounts'}</button>`).join('')}</div>
+  <div id="speople">${people.map(p => `<div class="person"><span class="avatar ${p === 'You' ? 'me' : ''}" style="background:${PEOPLE_COL[p]}">${p === 'You' ? 'You' : p.charAt(0)}</span><span class="grow">${p}</span>
+    ${d.split === 'Equal' ? `<input type="checkbox" id="sp-${p}" checked aria-label="Include ${p}" onchange="splitPreview()" style="width:22px;height:22px"><span class="sub" id="spv-${p}" style="width:60px;text-align:right"></span>`
+      : `<input type="number" inputmode="decimal" id="sc-${p}" placeholder="0" aria-label="${p}'s share" style="width:90px;height:40px;border-radius:12px;border:1.5px solid var(--line);background:var(--bg);padding:0 10px">`}</div>`).join('')}</div>
+  <div id="serr"></div><button class="btn cta block mt" onclick="saveShared()">Add bill and notify housemates</button>`;
+};
+function keepShared() {
+  const keep = { n: document.getElementById('sname').value, t: document.getElementById('stotal').value, b: document.getElementById('sby').value };
+  renderLayer();
+  document.getElementById('sname').value = keep.n; document.getElementById('stotal').value = keep.t; document.getElementById('sby').value = keep.b; splitPreview();
+}
+function splitPreview() {
+  if (ui.sheet.data.split !== 'Equal') return;
+  const people = ['You', ...S.house.members], total = parseFloat(document.getElementById('stotal').value) || 0;
+  const inc = people.filter(p => document.getElementById('sp-' + p).checked);
+  people.forEach(p => { document.getElementById('spv-' + p).textContent = inc.includes(p) && total ? money(total / inc.length) : ''; });
+}
+function saveShared() {
+  const people = ['You', ...S.house.members], name = document.getElementById('sname').value.trim(), total = parseFloat(document.getElementById('stotal').value), by = document.getElementById('sby').value;
+  const err = m => { document.getElementById('serr').innerHTML = `<p class="err" style="margin-top:10px">${m}</p>`; };
+  if (!name || !(total > 0)) return err('Add a bill name and a total above $0.');
+  const shares = {};
+  if (ui.sheet.data.split === 'Equal') {
+    const inc = people.filter(p => document.getElementById('sp-' + p).checked);
+    if (inc.length < 2) return err('Choose at least two people to split with.');
+    inc.forEach(p => shares[p] = Math.round(total / inc.length * 100) / 100);
+  } else {
+    people.forEach(p => { const v = parseFloat(document.getElementById('sc-' + p).value) || 0; if (v > 0) shares[p] = v; });
+    const s = sum(Object.values(shares));
+    if (Math.abs(s - total) > 0.01) return err(`Shares add up to ${money(s)}, but the bill is ${money(total)}.`);
+  }
+  if (!shares.You) shares.You = 0;
+  const paid = {}; Object.keys(shares).forEach(p => paid[p] = p === by || shares[p] === 0);
+  S.shared.push({ id: 's' + Date.now(), name, total, paidBy: by, split: ui.sheet.data.split, shares, paid });
+  save(); closeSheet(); render(); toast(`${name} added. Housemates have been notified`);
+}
+
+sheets.limit = () => {
+  const ti = takeawayInsight(), sug = round5(ti.usual / 4.33);
+  return `<h2>Set a takeaway limit</h2><p class="sub">Your usual is about ${money(sug, 0)} a week. FIMA will let you know when you get close.</p>
+  <div class="money"><span>$</span><label class="sr" for="lim">Weekly limit</label><input id="lim" type="number" inputmode="decimal" value="${S.limitOverride.Takeaway || sug}" autofocus></div>
+  <button class="btn primary block" onclick="saveLimit()">Set weekly limit</button>`;
+};
+function saveLimit() {
+  const v = parseFloat(document.getElementById('lim').value);
+  if (!(v > 0)) return;
+  S.limitOverride.Takeaway = v; save(); closeSheet(); render(); toast(`Takeaway limit set to ${money(v, 0)} a week. See it in Plan`);
+}
+
+sheets.sub = d => {
+  const u = S.subs.find(x => x.id === d.id);
+  return `<h2>${esc(u.name)}</h2><p class="sub">${money(u.amount)} a month. ${esc(u.note)}.</p>
+  <div class="card t-green" style="border:0">Cancelling would save about <b>${money(u.amount * 12, 0)} a year</b>.</div>
+  <p class="sub">FIMA cannot cancel subscriptions for you. We can remind you before the next charge.</p>
+  <button class="btn primary block" onclick="subAction('${u.id}','remind')">Remind me to cancel</button>
+  <button class="btn ghost block mt" onclick="subAction('${u.id}','keep')">Keep it</button>`;
+};
+function subAction(id, a) { const u = S.subs.find(x => x.id === id); u.status = a; save(); closeSheet(); render(); toast(a === 'keep' ? `${u.name} kept` : `We'll remind you before ${u.name} renews`); }
+
+sheets.tip = d => { const t = TIPS[d.i]; return `<span class="ic ${CAT_TINT[t.i]}" style="margin-bottom:10px">${icon(t.i, 20)}</span><h2>${t.t}</h2><p>${t.body}</p><p class="sub">General information only. Check eligibility with the provider.</p><button class="btn primary block" onclick="closeSheet()">Got it</button>`; };
+
+sheets.alerts = () => `<h2>Notification settings</h2><p class="sub">Choose which alerts FIMA sends.</p>
+  ${[['bills', 'Bill reminders', '3 days before a bill is due'], ['low', 'Low safe-to-spend', 'When you have less than $60 free'], ['unusual', 'Unusual spending', 'When a category is well above your usual']].map(([k, t, s]) => `<div class="row" style="padding:10px 0"><span><b style="font-weight:600;display:block">${t}</b><small class="muted">${s}</small></span>${sw('al' + k, S.alerts[k], `S.alerts.${k}=!S.alerts.${k};save();render()`, t)}</div>`).join('')}
+  <button class="btn primary block mt" onclick="closeSheet()">Done</button>`;
+
+sheets.theme = () => `<h2>Theme</h2><div class="mt">${[['system', 'Match my phone'], ['light', 'Light'], ['dark', 'Dark']].map(([k, l]) => `<button class="opt ${S.theme === k ? 'on' : ''}" onclick="S.theme='${k}';save();render()"><span class="radio"></span>${l}</button>`).join('')}</div>
+  <button class="btn primary block" onclick="closeSheet()">Done</button>`;
+
+sheets.help = () => `<h2>Help and support</h2>
+  ${[['What does safe to spend mean?', 'It is your balance minus bills due in the next 14 days and this week\'s goal savings. It is the amount you can spend without putting rent or bills at risk.'],
+    ['Do I have to connect my bank?', 'No. Manual entry works for every feature. Connecting through the Consumer Data Right just saves typing.'],
+    ['Are the AI suggestions financial advice?', 'No. They are optional, general suggestions based on your own spending. You can dismiss them or turn AI analysis off in Privacy.'],
+    ['How does bill splitting work?', 'Add a shared bill, choose who is included, and FIMA tracks who has paid. Reminders are sent as friendly notifications.']].map(([q, a]) => `<details class="card" style="margin-bottom:8px"><summary style="font-weight:700;cursor:pointer">${q}</summary><p class="sub" style="margin:8px 0 0">${a}</p></details>`).join('')}
+  <button class="btn primary block" onclick="closeSheet()">Close</button>`;
+
+sheets.about = () => `<div class="center">${mascot('happy', 80)}<h2 class="mt">FIMA</h2><p class="sub">Money management that fits student life.</p></div>
+  <p style="font-size:14px">High-fidelity prototype for SIT317 Task 8.2HD by Lav Patel, based on Team 12's FIMA solution. Balances, bank connections, AI suggestions and notifications are simulated with sample data.</p>
+  <button class="btn primary block" onclick="closeSheet()">Close</button>`;
+
+sheets.consent = d => {
+  if (d.stage === 'loading') return `<h2 class="center">Connecting securely</h2><div class="spinner"></div><p class="sub center">Waiting for your bank to confirm (simulated)</p>`;
+  return `<h2>Connect your bank</h2><p class="sub">Through the Consumer Data Right. You choose what to share.</p>
+  <div class="field mt"><label for="cbank">Your bank</label><select id="cbank"><option>Everyday Bank (demo)</option><option>Uni Credit Union (demo)</option><option>Other bank (demo)</option></select></div>
+  <div class="card t-green" style="border:0"><b>FIMA will see</b><div class="sub" style="margin-top:4px">Account names, balances and the last 12 months of transactions.</div></div>
+  <div class="card t-orange" style="border:0"><b>FIMA will never</b><div class="sub" style="margin-top:4px">See your banking password, move money or make payments.</div></div>
+  <p class="sub">Consent lasts 12 months. You can withdraw it any time in Privacy and data.</p>
+  <button class="btn primary block" onclick="connectBank()">Agree and connect</button><button class="btn ghost block mt" onclick="closeSheet()">Not now</button>`;
+};
+function connectBank() {
+  ui.sheet.data.stage = 'loading'; renderLayer();
+  setTimeout(() => {
+    const from = ui.sheet ? ui.sheet.data.from : 'privacy';
+    ui.sheet = null;
+    if (from === 'onboard') { ui.onb.bank = 'connected'; ui.onb.balance = 684; render(); }
+    else { S.user.bank = true; S.privacy.accounts = seedData().privacy.accounts; save(); render(); }
+    toast('Bank connected (read-only)');
+  }, 1300);
+}
+
+// Dialogs, toasts and the layer that holds them
+function renderLayer() {
+  const l = document.getElementById('layer');
+  let h = '';
+  if (ui.sheet) h += `<div class="scrim" onclick="if(event.target===this)closeSheet()"><div class="sheet" role="dialog" aria-modal="true"><div class="grab"></div>${sheets[ui.sheet.type](ui.sheet.data)}</div></div>`;
+  if (ui.dialog) {
+    const d = ui.dialog;
+    h += `<div class="scrim mid"><div class="dialog" role="alertdialog" aria-modal="true"><h2>${d.title}</h2><p>${d.body}</p>
+      ${d.confirmWord ? `<div class="field"><label for="cword">Type ${d.confirmWord}</label><input id="cword" autocomplete="off" oninput="document.getElementById('dok').disabled=this.value!=='${d.confirmWord}'"></div>` : ''}
+      <button class="btn ${d.danger ? 'danger' : 'primary'} block" id="dok" ${d.confirmWord ? 'disabled' : ''} onclick="dialogOk()">${d.ok}</button>
+      <button class="btn ghost block mt" onclick="ui.dialog=null;renderLayer()">Cancel</button></div></div>`;
+  }
+  l.innerHTML = h;
+  if (ui.dialog) setTimeout(() => { const f = document.getElementById('cword') || document.getElementById('dok'); if (f) f.focus(); }, 30);
+}
+function dialogOk() { const a = ui.dialog.action; ui.dialog = null; a(); render(); }
+
+let toastTimer;
+function toast(msg, undo) {
+  const app = document.getElementById('app');
+  app.querySelectorAll('.toast').forEach(t => t.remove());
+  const t = document.createElement('div');
+  t.className = 'toast'; t.setAttribute('role', 'status');
+  t.innerHTML = `${icon('check', 18)}<span>${msg}</span>`;
+  if (undo) { const b = document.createElement('button'); b.textContent = 'Undo'; b.onclick = () => { undo(); t.remove(); }; t.appendChild(b); }
+  if (!['home', 'expenses', 'plan', 'split', 'insights'].includes(ui.screen)) t.style.bottom = '24px';
+  app.appendChild(t);
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.remove(), 3600);
+}
+
+// Finally I connect navigation, rendering and the guide panel
+const TABS = [['home', 'Home', 'home'], ['expenses', 'Expenses', 'receipt'], ['plan', 'Plan', 'plan'], ['split', 'Split', 'split'], ['insights', 'Insights', 'spark']];
+function go(s, anchor) {
+  ui.screen = s; ui.sheet = null; ui.dialog = null; render();
+  if (anchor) setTimeout(() => { const el = document.getElementById(anchor); if (el) el.scrollIntoView({ behavior: 'smooth' }); }, 80);
+}
+function applyTheme() {
+  if (S.theme === 'system') document.documentElement.removeAttribute('data-theme');
+  else document.documentElement.setAttribute('data-theme', S.theme);
+}
+function render() {
+  applyTheme();
+  const sc = document.getElementById('screen');
+  const same = sc.dataset.s === ui.screen, top = sc.scrollTop;
+  sc.innerHTML = screens[ui.screen]();
+  sc.dataset.s = ui.screen;
+  sc.scrollTop = same ? top : 0;
+  const main = TABS.some(t => t[0] === ui.screen);
+  sc.classList.toggle('nonav', !main);
+  const nav = document.getElementById('nav');
+  nav.style.display = main ? '' : 'none';
+  nav.innerHTML = TABS.map(([k, l, ic]) => `<button class="${ui.screen === k ? 'on' : ''}" ${ui.screen === k ? 'aria-current="page"' : ''} onclick="go('${k}')"><span class="pill">${icon(ic, 21)}</span>${l}</button>`).join('');
+  const app = document.getElementById('app');
+  app.querySelectorAll('.fab').forEach(f => f.remove());
+  if (ui.screen === 'home' || ui.screen === 'expenses') app.insertAdjacentHTML('beforeend', `<button class="fab" aria-label="Add expense or income" onclick="openSheet('add')">${icon('plus', 28, 2.5)}</button>`);
+  renderLayer();
+}
+
+function renderGuide() {
+  const feats = [
+    ['Onboarding: income type and optional bank link', () => { S.onboarded = false; go('splash'); }],
+    ['Expense and money tracking', () => go('expenses')],
+    ['Personalised budget planner', () => { ui.planTab = 'budget'; go('plan'); }],
+    ['Safe-to-spend indicator', () => { go('home'); openSheet('breakdown'); }],
+    ['Unnecessary spending detection', () => go('insights')],
+    ['AI-based financial suggestions', () => go('insights')],
+    ['Future payment prediction and reminders', () => { ui.planTab = 'budget'; go('plan'); }],
+    ['Saving goals and progress tracking', () => { ui.planTab = 'goals'; go('plan'); }],
+    ['Split bills with housemates', () => go('split')],
+    ['Emergency-fund planner', () => { ui.planTab = 'goals'; go('plan'); }, true],
+    ['Privacy and data-control dashboard', () => go('privacy'), true],
+    ['Student discounts and cost-saving tips', () => go('insights', 'tips'), true]
+  ];
+  window._feats = feats;
+  document.getElementById('guide').innerHTML = `
+    <div class="brand">${mascot('happy', 44)}<span>FIMA</span></div>
+    <p><b style="color:var(--text)">High-fidelity prototype.</b> A working simulation of the FIMA mobile app for Australian university students with irregular income. Tap anything in the phone, or jump to a feature below.</p>
+    <h3>Key features</h3>
+    <ul class="flist">${feats.map((f, i) => `<li><button onclick="_feats[${i}][1]()"><span class="n">${i === 0 ? icon('user', 13, 2.5) : i}</span>${f[0]}${f[2] ? '<span class="new">My addition</span>' : ''}</button></li>`).join('')}</ul>
+    <h3>Try these tasks (from my 8.1C test plan)</h3>
+    <ol class="tasks">
+      <li>Sign up, say how you are paid and set up without connecting a bank.</li>
+      <li>You want to buy something for $60. Can you afford it?</li>
+      <li>Log a $24.50 grocery purchase, then add your pay as income.</li>
+      <li>Your work hours were cut. Update your plan.</li>
+      <li>Split a $120 electricity bill and remind whoever has not paid.</li>
+      <li>Move money into your emergency fund.</li>
+      <li>Dismiss an AI suggestion, then find the student savings tips.</li>
+      <li>Stop sharing bank data and find how to delete your data.</li>
+    </ol>
+    <div class="foot"><button class="btn ghost sm" onclick="loadDemo()">Load demo account (Priya)</button><button class="btn ghost sm" onclick="startFresh()">Start fresh</button></div>
+    <p class="note">Simulated parts: bank connection (Consumer Data Right), AI suggestions, push notifications and payments use sample data. Your changes are saved in this browser only.</p>`;
+}
+function startFresh() {
+  const theme = S.theme; S = seedData(); S.theme = theme; S.account = null; S.onboarded = false;
+  ui = { screen: 'splash', planTab: 'budget', period: 'Week', filter: 'All', check: '', billView: 'list', calSel: null, sheet: null, dialog: null, onb: {} };
+  save(); render(); toast('Everything cleared. Sign up to start');
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { if (ui.dialog) { ui.dialog = null; renderLayer(); } else if (ui.sheet) closeSheet(); } });
+
+renderGuide();
+render();
+</script>
+</body>
+</html>
